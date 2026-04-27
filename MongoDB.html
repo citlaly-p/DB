@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MongoDB — Bases de Datos Semi-Estructuradas</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f7f5f0;
+      --surface:   #ffffff;
+      --border:    #ddd8ce;
+      --accent:    #2a5298;
+      --accent2:   #c0392b;
+      --accent3:   #16a085;
+      --text:      #1a1a1a;
+      --muted:     #6b6560;
+      --tag-bg:    #eaf0fb;
+      --tag-text:  #2a5298;
+      --code-bg:   #1e2a3a;
+      --code-text: #e8f4f0;
+    }
+
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 1.75;
+      color: var(--text);
+      background: var(--bg);
+      padding: 2rem 1rem 4rem;
+    }
+
+    .page { max-width: 820px; margin: 0 auto; }
+
+    header {
+      border-bottom: 3px solid var(--accent);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .badge {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.65rem;
+      border-radius: 3px;
+      margin-bottom: 0.75rem;
+    }
+    header h1 {
+      font-family: 'Lora', serif;
+      font-size: 2.1rem;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--text);
+      margin-bottom: 0.4rem;
+    }
+    header p.subtitle {
+      font-size: 1rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 6px;
+      padding: 1.4rem 1.6rem;
+      margin-bottom: 2.5rem;
+    }
+    .toc h2 {
+      font-family: 'Lora', serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.8rem;
+    }
+    .toc ol { padding-left: 1.2rem; }
+    .toc li { margin-bottom: 0.3rem; }
+    .toc a { color: var(--text); text-decoration: none; font-size: 0.95rem; }
+    .toc a:hover { color: var(--accent); text-decoration: underline; }
+
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2rem 2.2rem;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    section::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 4px; height: 100%;
+      background: var(--accent);
+      border-radius: 8px 0 0 8px;
+    }
+
+    .section-number {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 0.15rem 0.5rem;
+      border-radius: 3px;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      font-family: 'Lora', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 1rem;
+      line-height: 1.3;
+    }
+    h3 {
+      font-family: 'Lora', serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 1.5rem 0 0.6rem;
+      padding-bottom: 0.3rem;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    p { margin-bottom: 1rem; }
+    p:last-child { margin-bottom: 0; }
+    strong { font-weight: 600; color: var(--text); }
+    em { font-style: italic; color: var(--muted); }
+
+    ul, ol { padding-left: 1.4rem; margin-bottom: 1rem; }
+    li { margin-bottom: 0.45rem; }
+    li:last-child { margin-bottom: 0; }
+
+    .analogy {
+      background: #fdf8ee;
+      border: 1px solid #e8d9a8;
+      border-left: 4px solid #e6b800;
+      border-radius: 6px;
+      padding: 1rem 1.2rem;
+      margin: 1.2rem 0;
+      font-size: 0.93rem;
+    }
+    .analogy .analogy-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #9a7400;
+      margin-bottom: 0.4rem;
+    }
+
+    .key {
+      background: var(--tag-bg);
+      border: 1px solid #c5d8f8;
+      border-left: 4px solid var(--accent);
+      border-radius: 6px;
+      padding: 1rem 1.2rem;
+      margin: 1.2rem 0;
+      font-size: 0.93rem;
+    }
+    .key .key-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.4rem;
+    }
+
+    .warning {
+      background: #fef0f0;
+      border: 1px solid #f5c6c6;
+      border-left: 4px solid var(--accent2);
+      border-radius: 6px;
+      padding: 1rem 1.2rem;
+      margin: 1.2rem 0;
+      font-size: 0.93rem;
+    }
+    .warning .warning-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 0.4rem;
+    }
+
+    .code-block {
+      background: var(--code-bg);
+      color: var(--code-text);
+      border-radius: 6px;
+      padding: 1.1rem 1.4rem;
+      margin: 1.2rem 0;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.88rem;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .code-block .kw  { color: #79c0ff; font-weight: 600; }
+    .code-block .str { color: #a5d6a7; }
+    .code-block .num { color: #ffb74d; }
+    .code-block .key-c { color: #f48fb1; }
+    .code-block .cmt { color: #8b9cb0; font-style: italic; }
+    .code-block .op  { color: #ffb74d; }
+    .code-block .result-label {
+      display: block;
+      color: #ef9a9a;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.2rem 0;
+      font-size: 0.93rem;
+    }
+    th {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      padding: 0.6rem 0.9rem;
+      text-align: left;
+    }
+    td {
+      padding: 0.55rem 0.9rem;
+      border-bottom: 1px solid var(--border);
+    }
+    tr:nth-child(even) td { background: #f4f7fd; }
+    tr:last-child td { border-bottom: none; }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .summary-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem 1.1rem;
+    }
+    .summary-card .card-icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
+    .summary-card h4 {
+      font-family: 'Lora', serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+      color: var(--accent);
+    }
+    .summary-card p { font-size: 0.88rem; color: var(--muted); margin-bottom: 0; }
+
+    .op-table-tag {
+      display: inline-block;
+      background: var(--code-bg);
+      color: #79c0ff;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      padding: 0.1rem 0.4rem;
+      border-radius: 3px;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <div style="margin: 1rem 0 1rem 1rem;">
+    <a href="index.html" style="background: #2a5298; color: white; padding: 0.4rem 0.8rem; text-decoration: none; border-radius: 6px; font-weight: 600;">← Volver al índice principal</a>
+  </div>
+  <div class="page">
+
+    <header>
+      <div class="badge">Bases de Datos Post-Relacionales</div>
+      <h1>Bases de Datos Semi-Estructuradas: MongoDB</h1>
+      <p class="subtitle">Resumen académico detallado — Dr. Edgard Iván Benítez Guerrero</p>
+    </header>
+
+    <div class="toc">
+      <h2>Contenido</h2>
+      <ol>
+        <li><a href="#intro">¿Qué es MongoDB? Introducción y contexto</a></li>
+        <li><a href="#ventajas">Ventajas principales de MongoDB</a></li>
+        <li><a href="#casos">Casos de uso</a></li>
+        <li><a href="#documentos">Documentos y colecciones: la unidad de almacenamiento</a></li>
+        <li><a href="#tipos">Tipos de datos admitidos</a></li>
+        <li><a href="#relaciones">Relaciones entre documentos</a></li>
+        <li><a href="#consultas">Consultas básicas con <code>find()</code></a></li>
+        <li><a href="#operadores">Operadores de consulta</a></li>
+        <li><a href="#actualizaciones">Actualizaciones de documentos</a></li>
+        <li><a href="#agregaciones">Agregaciones: consultas avanzadas</a></li>
+        <li><a href="#java">Conexión a MongoDB desde Java</a></li>
+        <li><a href="#resumen">Resumen final</a></li>
+      </ol>
+    </div>
+
+    <!-- SECCIÓN 1 -->
+    <section id="intro">
+      <div class="section-number">I · Introducción</div>
+      <h2>¿Qué es MongoDB? Introducción y contexto</h2>
+
+      <p>MongoDB es un <strong>sistema gestor de bases de datos</strong> que pertenece a la categoría de las bases de datos <em>NoSQL</em> (del inglés "Not Only SQL"), y más específicamente, al modelo de <strong>bases de datos orientadas a documentos</strong>. A diferencia de las bases de datos relacionales tradicionales (como MySQL o PostgreSQL), MongoDB no almacena la información en tablas con filas y columnas, sino en <strong>documentos</strong> — unidades de información más flexibles y expresivas.</p>
+
+      <div class="analogy">
+        <div class="analogy-label">🧩 Analogía</div>
+        Imagina que en una base de datos relacional los datos viven en hojas de cálculo: todo en columnas fijas, perfectamente alineado. MongoDB, en cambio, se parece más a una carpeta llena de <strong>fichas de papel</strong>: cada ficha puede tener los campos que necesite, en el orden que quiera, y pueden ser diferentes entre sí.
+      </div>
+
+      <h3>¿Qué es BSON?</h3>
+      <p>MongoDB utiliza internamente un formato llamado <strong>BSON</strong> (Binary JSON), que es una extensión del popular formato JSON (JavaScript Object Notation). Para comprender BSON, primero hay que entender JSON:</p>
+      <p>JSON es una forma de representar datos usando texto legible para humanos, organizando la información en pares de <strong>clave: valor</strong>, encerrados entre llaves <code>{ }</code>. Es el mismo formato que usan muchas aplicaciones web para transmitir datos.</p>
+      <p>BSON agrega sobre JSON la capacidad de almacenar tipos de datos adicionales (como fechas y datos binarios) y hace que el almacenamiento y la búsqueda sean más eficientes al ser un formato binario (legible eficientemente por computadoras, aunque no a simple vista por humanos).</p>
+
+      <div class="key">
+        <div class="key-label">📌 Concepto Clave</div>
+        <strong>JSON</strong> = formato de texto legible para humanos, con pares clave-valor. <strong>BSON</strong> = versión binaria y enriquecida de JSON, usada internamente por MongoDB para mayor velocidad y soporte de más tipos de datos.
+      </div>
+
+      <p>MongoDB es <strong>popular</strong> especialmente en el desarrollo de aplicaciones modernas por dos razones fundamentales: su <strong>flexibilidad</strong> (no exige definir la estructura de los datos con anticipación) y su <strong>escalabilidad</strong> (puede manejar enormes cantidades de datos distribuyéndolos en múltiples servidores).</p>
+    </section>
+
+    <!-- SECCIÓN 2 -->
+    <section id="ventajas">
+      <div class="section-number">II · Ventajas</div>
+      <h2>Ventajas principales de MongoDB</h2>
+
+      <p>MongoDB ha ganado gran popularidad en la industria del software por cuatro ventajas fundamentales:</p>
+
+      <h3>1. Esquema flexible</h3>
+      <p>En una base de datos relacional, antes de guardar cualquier dato hay que definir exactamente qué campos tendrá cada registro y de qué tipo serán. En MongoDB, <strong>no es obligatorio</strong>. Dos documentos dentro de la misma colección pueden tener campos completamente diferentes sin que eso cause ningún error. Esta característica es enormemente útil cuando los datos evolucionan con el tiempo o cuando provienen de fuentes variadas.</p>
+
+      <h3>2. Consultas rápidas</h3>
+      <p>MongoDB utiliza <strong>índices</strong> (estructuras de búsqueda acelerada, similares al índice al final de un libro) que permiten encontrar documentos de forma muy eficiente, incluso en colecciones con millones de registros. Además, al almacenar datos relacionados juntos dentro de un mismo documento, evita la necesidad de costosas operaciones de unión entre tablas (<em>joins</em>) que son comunes en bases de datos relacionales.</p>
+
+      <h3>3. Alta disponibilidad con replicación</h3>
+      <p>MongoDB puede configurarse para mantener copias automáticas de los datos en múltiples servidores, un mecanismo llamado <strong>replicación</strong>. Si un servidor falla, otro toma el control automáticamente sin interrumpir el servicio. Esto es fundamental para aplicaciones críticas que no pueden permitirse tiempo de inactividad.</p>
+
+      <div class="analogy">
+        <div class="analogy-label">🧩 Analogía</div>
+        La replicación es como tener varias fotocopias del mismo expediente en distintos archiveros. Si uno se rompe o se pierde, siempre hay una copia disponible.
+      </div>
+
+      <h3>4. Escalabilidad horizontal</h3>
+      <p>Cuando una base de datos crece demasiado para un solo servidor, existen dos estrategias: la <em>escalabilidad vertical</em> (comprar un servidor más potente y caro) y la <em>escalabilidad horizontal</em> (agregar más servidores baratos y distribuir los datos entre ellos). MongoDB está diseñado desde sus cimientos para la segunda estrategia, a través de un mecanismo llamado <strong>sharding</strong> (fragmentación de datos). Esto lo hace ideal para aplicaciones que manejan millones de usuarios o terabytes de información.</p>
+    </section>
+
+    <!-- SECCIÓN 3 -->
+    <section id="casos">
+      <div class="section-number">III · Casos de uso</div>
+      <h2>Casos de uso</h2>
+
+      <p>MongoDB no es la solución adecuada para todo tipo de problema. Brilla especialmente en los siguientes escenarios:</p>
+
+      <ul>
+        <li><strong>Aplicaciones web con datos semi-estructurados:</strong> cuando cada usuario o entidad puede tener atributos distintos. Por ejemplo, un perfil de usuario en una red social donde unos tienen foto de perfil, otros tienen dirección, y otros tienen ambos o ninguno.</li>
+        <li><strong>Almacenamiento de catálogos o registros de eventos:</strong> en un catálogo de productos de e-commerce, una televisión puede tener "resolución" y "tamaño de pantalla", mientras que un libro tiene "autor" y "ISBN". Con MongoDB, ambos conviven en la misma colección sin forzar campos vacíos.</li>
+        <li><strong>Aplicaciones de IoT (Internet of Things):</strong> los sensores emiten datos constantemente y en formatos variados. MongoDB puede ingerir estos flujos de datos de forma eficiente.</li>
+        <li><strong>E-commerce:</strong> gestión de pedidos, inventarios y perfiles de clientes con estructuras variables.</li>
+        <li><strong>Redes sociales:</strong> publicaciones, comentarios, reacciones — datos de alta velocidad y estructura heterogénea.</li>
+      </ul>
+
+      <div class="warning">
+        <div class="warning-label">⚠️ Cuándo NO usar MongoDB</div>
+        MongoDB no es la mejor opción cuando los datos tienen relaciones muy complejas entre sí (muchos-a-muchos), cuando se requiere total consistencia transaccional (como en sistemas bancarios críticos), o cuando el esquema de los datos es perfectamente estable y uniforme.
+      </div>
+    </section>
+
+    <!-- SECCIÓN 4 -->
+    <section id="documentos">
+      <div class="section-number">IV · Modelo de datos</div>
+      <h2>Documentos y colecciones: la unidad de almacenamiento</h2>
+
+      <h3>El documento BSON</h3>
+      <p>La <strong>unidad básica de almacenamiento</strong> en MongoDB es el <strong>documento</strong>. Un documento es un conjunto de pares <strong>atributo: valor</strong> (también llamados campo: valor), escritos en formato JSON/BSON. Cada atributo es el nombre del dato; cada valor es el dato en sí.</p>
+
+      <p>Ejemplo de un documento de un usuario:</p>
+      <div class="code-block">{
+    <span class="key-c">_id</span>: <span class="num">1</span>,
+    <span class="key-c">nombre</span>: <span class="str">"Juan"</span>,
+    <span class="key-c">edad</span>: <span class="num">30</span>,
+    <span class="key-c">intereses</span>: [<span class="str">"música"</span>, <span class="str">"lectura"</span>]
+  }</div>
+
+      <p>Analicemos cada campo:</p>
+      <ul>
+        <li><strong><code>_id: 1</code></strong> — El identificador único del documento. MongoDB lo exige en cada documento para poder distinguirlo de los demás. Si no se especifica, MongoDB lo genera automáticamente como un ObjectId (un código hexadecimal único).</li>
+        <li><strong><code>nombre: "Juan"</code></strong> — Un campo de texto (String).</li>
+        <li><strong><code>edad: 30</code></strong> — Un campo numérico (Number).</li>
+        <li><strong><code>intereses: ["música", "lectura"]</code></strong> — Un campo de tipo Array (lista). Un solo campo puede contener múltiples valores.</li>
+      </ul>
+
+      <div class="analogy">
+        <div class="analogy-label">🧩 Analogía</div>
+        Un documento MongoDB es como una <strong>ficha de biblioteca</strong>: tiene etiquetas (título, autor, año, ISBN…) y sus valores correspondientes. Lo novedoso es que una ficha de película puede tener "director" y "duración", mientras que la de un libro tiene "autor" y "páginas", y ambas pueden coexistir en el mismo cajón.
+      </div>
+
+      <h3>Las colecciones</h3>
+      <p>Los documentos se agrupan en <strong>colecciones</strong>. Una colección en MongoDB es análoga a una tabla en SQL, pero sin la restricción del esquema fijo. Una base de datos MongoDB puede tener múltiples colecciones: una para usuarios, otra para productos, otra para pedidos, etc.</p>
+
+      <div class="key">
+        <div class="key-label">📌 Concepto Clave</div>
+        <strong>No todos los documentos de una colección necesitan tener los mismos campos.</strong> Un documento en la colección "usuarios" puede tener el campo "teléfono" y otro no. MongoDB acepta esta heterogeneidad sin problemas.
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Concepto en SQL</th>
+            <th>Equivalente en MongoDB</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Base de datos</td><td>Base de datos</td></tr>
+          <tr><td>Tabla</td><td>Colección</td></tr>
+          <tr><td>Fila / registro</td><td>Documento</td></tr>
+          <tr><td>Columna</td><td>Campo (atributo)</td></tr>
+          <tr><td>Clave primaria</td><td><code>_id</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- SECCIÓN 5 -->
+    <section id="tipos">
+      <div class="section-number">V · Tipos de datos</div>
+      <h2>Tipos de datos admitidos</h2>
+
+      <p>Una de las grandes fortalezas de BSON frente al JSON estándar es la variedad de tipos de datos que soporta. Esto permite almacenar prácticamente cualquier tipo de información directamente en el documento, sin conversiones externas:</p>
+
+      <table>
+        <thead>
+          <tr><th>Tipo</th><th>Descripción</th><th>Ejemplo</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>String</strong></td>
+            <td>Texto libre de caracteres</td>
+            <td><code>"Hola mundo"</code></td>
+          </tr>
+          <tr>
+            <td><strong>Number</strong></td>
+            <td>Número entero o decimal</td>
+            <td><code>30</code>, <code>3.14</code></td>
+          </tr>
+          <tr>
+            <td><strong>Boolean</strong></td>
+            <td>Verdadero o falso</td>
+            <td><code>true</code>, <code>false</code></td>
+          </tr>
+          <tr>
+            <td><strong>Date</strong></td>
+            <td>Fecha y hora</td>
+            <td><code>ISODate("2024-01-15")</code></td>
+          </tr>
+          <tr>
+            <td><strong>Array</strong></td>
+            <td>Lista ordenada de valores</td>
+            <td><code>["música", "lectura"]</code></td>
+          </tr>
+          <tr>
+            <td><strong>Object</strong></td>
+            <td>Documento anidado (sub-documento)</td>
+            <td><code>{ calle: "Av. 5", cp: "91000" }</code></td>
+          </tr>
+          <tr>
+            <td><strong>ObjectId</strong></td>
+            <td>Identificador único generado por MongoDB</td>
+            <td><code>ObjectId("64a3...")</code></td>
+          </tr>
+          <tr>
+            <td><strong>Null</strong></td>
+            <td>Ausencia de valor</td>
+            <td><code>null</code></td>
+          </tr>
+          <tr>
+            <td><strong>Binary</strong></td>
+            <td>Datos binarios (imágenes, archivos)</td>
+            <td>BinData(...)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>El tipo <strong>Object</strong> (sub-documento) es especialmente poderoso: permite anidar documentos dentro de documentos, creando estructuras jerárquicas ricas sin necesidad de tablas adicionales.</p>
+    </section>
+
+    <!-- SECCIÓN 6 -->
+    <section id="relaciones">
+      <div class="section-number">VI · Relaciones</div>
+      <h2>Relaciones entre documentos</h2>
+
+      <p>En las bases de datos relacionales, las relaciones entre entidades se implementan mediante claves foráneas y operaciones de unión (<em>joins</em>). En MongoDB existen dos estrategias para modelar relaciones, cada una con sus ventajas:</p>
+
+      <h3>1. Modelado embebido (Embedding)</h3>
+      <p>Consiste en incluir un documento dentro de otro como sub-documento. Es ideal cuando los datos relacionados siempre se consultan juntos.</p>
+
+      <div class="code-block">{
+    <span class="key-c">_id</span>: <span class="num">1</span>,
+    <span class="key-c">nombre</span>: <span class="str">"Ana"</span>,
+    <span class="key-c">direccion</span>: {
+      <span class="key-c">calle</span>: <span class="str">"Av. Xalapa 45"</span>,
+      <span class="key-c">ciudad</span>: <span class="str">"Xalapa"</span>,
+      <span class="key-c">cp</span>: <span class="str">"91000"</span>
+    }
+  }</div>
+
+      <div class="analogy">
+        <div class="analogy-label">🧩 Analogía</div>
+        El modelado embebido es como escribir la dirección de una persona directamente en su expediente, en lugar de guardarla en un archivero separado y poner solo un número de referencia.
+      </div>
+
+      <h3>2. Modelado por referencias (References)</h3>
+      <p>Consiste en guardar en un documento únicamente el <code>_id</code> de otro documento relacionado, en lugar del documento completo. Es útil cuando los datos relacionados se consultan por separado o cuando se repiten en muchos documentos.</p>
+
+      <div class="code-block"><span class="cmt">// Documento de pedido con referencia al usuario</span>
+  {
+    <span class="key-c">_id</span>: <span class="num">101</span>,
+    <span class="key-c">producto</span>: <span class="str">"Laptop"</span>,
+    <span class="key-c">usuario_id</span>: <span class="num">1</span>   <span class="cmt">// referencia al _id del usuario "Ana"</span>
+  }</div>
+
+      <table>
+        <thead>
+          <tr><th>Criterio</th><th>Embebido</th><th>Por referencias</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Velocidad de lectura</td><td>✅ Alta (todo en un documento)</td><td>⚠️ Requiere consultas adicionales</td></tr>
+          <tr><td>Duplicación de datos</td><td>⚠️ Posible si se repite</td><td>✅ Sin duplicación</td></tr>
+          <tr><td>Relación adecuada para</td><td>1:1, 1:N pequeño</td><td>N:M, documentos muy grandes</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- SECCIÓN 7 -->
+    <section id="consultas">
+      <div class="section-number">VII · Consultas</div>
+      <h2>Consultas básicas con <code>find()</code></h2>
+
+      <p>En MongoDB, la operación para <strong>leer o buscar</strong> documentos en una colección es <code>find()</code>. Es el equivalente al <code>SELECT</code> de SQL. Su sintaxis general es:</p>
+
+      <div class="code-block">db.<span class="kw">nombreColeccion</span>.find({ <span class="cmt">/* filtro */</span> }, { <span class="cmt">/* proyección */</span> })</div>
+
+      <p>Donde:</p>
+      <ul>
+        <li><strong>filtro</strong> es un documento que especifica las condiciones que deben cumplir los resultados.</li>
+        <li><strong>proyección</strong> (opcional) indica qué campos devolver o excluir en los resultados.</li>
+      </ul>
+
+      <h3>Ejemplo 1: Obtener todos los documentos</h3>
+      <div class="code-block">db.usuarios.find({})
+  <span class="cmt">// Equivalente a: SELECT * FROM usuarios</span></div>
+
+      <h3>Ejemplo 2: Filtrar por una condición (edad mayor a 25)</h3>
+      <div class="code-block">db.usuarios.find({ <span class="str">"edad"</span>: { <span class="str">"$gt"</span>: <span class="num">25</span> } })
+  <span class="cmt">// Equivalente a: SELECT * FROM usuarios WHERE edad &gt; 25</span></div>
+
+      <p>Aquí <code>$gt</code> es un <strong>operador de consulta</strong> que significa "greater than" (mayor que). Los operadores en MongoDB siempre van precedidos por el símbolo <code>$</code>.</p>
+
+      <h3>Ejemplo 3: Proyección — seleccionar solo algunos campos</h3>
+      <div class="code-block">db.usuarios.find(
+    { <span class="str">"edad"</span>: { <span class="str">"$gt"</span>: <span class="num">25</span> } },
+    { <span class="str">"nombre"</span>: <span class="num">1</span>, <span class="str">"edad"</span>: <span class="num">1</span>, <span class="str">"_id"</span>: <span class="num">0</span> }
+  )
+  <span class="cmt">// Devuelve solo nombre y edad; excluye _id</span>
+  <span class="cmt">// 1 = incluir, 0 = excluir</span></div>
+    </section>
+
+    <!-- SECCIÓN 8 -->
+    <section id="operadores">
+      <div class="section-number">VIII · Operadores</div>
+      <h2>Operadores de consulta</h2>
+
+      <p>MongoDB provee un conjunto rico de operadores para construir filtros de búsqueda. Se organizan en tres categorías:</p>
+
+      <h3>Operadores de comparación</h3>
+      <table>
+        <thead>
+          <tr><th>Operador</th><th>Significado</th><th>Ejemplo</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="op-table-tag">$gt</span></td>
+            <td>Mayor que (<em>greater than</em>)</td>
+            <td><code>edad: { $gt: 18 }</code></td>
+          </tr>
+          <tr>
+            <td><span class="op-table-tag">$lt</span></td>
+            <td>Menor que (<em>less than</em>)</td>
+            <td><code>precio: { $lt: 100 }</code></td>
+          </tr>
+          <tr>
+            <td><span class="op-table-tag">$eq</span></td>
+            <td>Igual a (<em>equal</em>)</td>
+            <td><code>nombre: { $eq: "Ana" }</code></td>
+          </tr>
+          <tr>
+            <td><span class="op-table-tag">$ne</span></td>
+            <td>Distinto de (<em>not equal</em>)</td>
+            <td><code>estado: { $ne: "inactivo" }</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Operadores de pertenencia</h3>
+      <table>
+        <thead>
+          <tr><th>Operador</th><th>Significado</th><th>Ejemplo</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="op-table-tag">$in</span></td>
+            <td>El valor está en la lista</td>
+            <td><code>ciudad: { $in: ["Xalapa","Veracruz"] }</code></td>
+          </tr>
+          <tr>
+            <td><span class="op-table-tag">$nin</span></td>
+            <td>El valor NO está en la lista</td>
+            <td><code>ciudad: { $nin: ["CDMX"] }</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Operadores lógicos</h3>
+      <table>
+        <thead>
+          <tr><th>Operador</th><th>Significado</th><th>Ejemplo</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="op-table-tag">$and</span></td>
+            <td>Ambas condiciones deben cumplirse</td>
+            <td><code>$and: [{edad: {$gt:18}}, {activo: true}]</code></td>
+          </tr>
+          <tr>
+            <td><span class="op-table-tag">$or</span></td>
+            <td>Al menos una condición se cumple</td>
+            <td><code>$or: [{ciudad:"Xalapa"}, {ciudad:"Orizaba"}]</code></td>
+          </tr>
+          <tr>
+            <td><span class="op-table-tag">$not</span></td>
+            <td>La condición NO se cumple</td>
+            <td><code>edad: { $not: { $lt: 18 } }</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="analogy">
+        <div class="analogy-label">🧩 Analogía</div>
+        Los operadores de MongoDB son como los filtros de una tienda en línea: puedes pedir productos con precio <strong>menor a</strong> $500 (<code>$lt</code>), de marca X <strong>o</strong> Y (<code>$or</code>), y que <strong>no</strong> estén agotados (<code>$not</code>). Cada operador refina la búsqueda.
+      </div>
+    </section>
+
+    <!-- SECCIÓN 9 -->
+    <section id="actualizaciones">
+      <div class="section-number">IX · Actualizaciones</div>
+      <h2>Actualizaciones de documentos</h2>
+
+      <p>Para modificar documentos ya existentes, MongoDB provee principalmente dos comandos:</p>
+
+      <h3><code>updateOne()</code> — Actualizar un solo documento</h3>
+      <p>Modifica únicamente el <strong>primer</strong> documento que coincide con el filtro. Recibe dos argumentos: el filtro para encontrar el documento y el operador de actualización.</p>
+
+      <div class="code-block">db.usuarios.updateOne(
+    { <span class="key-c">nombre</span>: <span class="str">"Juan"</span> },          <span class="cmt">// filtro: busca a Juan</span>
+    { <span class="str">$set</span>: { <span class="key-c">edad</span>: <span class="num">31</span> } }       <span class="cmt">// actualización: cambia edad a 31</span>
+  )
+  <span class="cmt">// Equivalente a: UPDATE usuarios SET edad=31 WHERE nombre='Juan' LIMIT 1</span></div>
+
+      <p>El operador <strong><code>$set</code></strong> indica qué campos se van a modificar sin tocar los demás campos del documento. Si el campo no existe, lo crea; si existe, lo actualiza.</p>
+
+      <div class="key">
+        <div class="key-label">📌 Concepto Clave</div>
+        Es importante usar <code>$set</code>. Si se omite y se pasa directamente el documento de reemplazo, MongoDB <strong>reemplazará el documento completo</strong>, perdiendo todos los campos que no se especifiquen. <code>$set</code> hace una modificación <em>parcial</em> y segura.
+      </div>
+
+      <h3><code>updateMany()</code> — Actualizar múltiples documentos</h3>
+      <p>Funciona igual que <code>updateOne()</code>, pero modifica <strong>todos</strong> los documentos que coincidan con el filtro, no solo el primero.</p>
+
+      <div class="code-block">db.usuarios.updateMany(
+    { <span class="key-c">ciudad</span>: <span class="str">"Xalapa"</span> },
+    { <span class="str">$set</span>: { <span class="key-c">region</span>: <span class="str">"Centro-Norte"</span> } }
+  )
+  <span class="cmt">// Agrega el campo "region" a TODOS los usuarios de Xalapa</span></div>
+    </section>
+
+    <!-- SECCIÓN 10 -->
+    <section id="agregaciones">
+      <div class="section-number">X · Agregaciones</div>
+      <h2>Agregaciones: consultas avanzadas</h2>
+
+      <p>El <strong>framework de agregación</strong> de MongoDB permite realizar operaciones de análisis y transformación de datos complejas, similares a las cláusulas <code>GROUP BY</code>, <code>SUM</code>, <code>AVG</code>, <code>HAVING</code> de SQL. Funciona como una <strong>cadena de procesamiento</strong> (pipeline): los documentos entran, pasan por varias etapas de transformación, y al final se obtiene el resultado.</p>
+
+      <div class="analogy">
+        <div class="analogy-label">🧩 Analogía</div>
+        Imagina una línea de ensamblaje en una fábrica. Los documentos son piezas que entran por un extremo. Cada etapa de la línea hace algo: una filtra las piezas defectuosas, otra las agrupa por color, otra cuenta cuántas hay de cada color. Al final del recorrido, obtienes el resultado procesado.
+      </div>
+
+      <h3>Operadores de agregación principales</h3>
+
+      <table>
+        <thead>
+          <tr><th>Operador</th><th>Función</th><th>Equivalente SQL</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="op-table-tag">$match</span></td>
+            <td>Filtra documentos por condición</td>
+            <td><code>WHERE</code></td>
+          </tr>
+          <tr>
+            <td><span class="op-table-tag">$group</span></td>
+            <td>Agrupa documentos por un campo</td>
+            <td><code>GROUP BY</code></td>
+          </tr>
+          <tr>
+            <td><span class="op-table-tag">$sum</span></td>
+            <td>Suma los valores de un campo</td>
+            <td><code>SUM()</code></td>
+          </tr>
+          <tr>
+            <td><span class="op-table-tag">$avg</span></td>
+            <td>Calcula el promedio de un campo</td>
+            <td><code>AVG()</code></td>
+          </tr>
+          <tr>
+            <td><span class="op-table-tag">$project</span></td>
+            <td>Selecciona o transforma campos del resultado</td>
+            <td><code>SELECT columnas</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Ejemplo: Edad promedio por ciudad</h3>
+      <div class="code-block">db.usuarios.aggregate([
+    { <span class="str">$match</span>: { <span class="key-c">activo</span>: <span class="kw">true</span> } },           <span class="cmt">// 1. Solo usuarios activos</span>
+    { <span class="str">$group</span>: {
+        <span class="key-c">_id</span>: <span class="str">"$ciudad"</span>,               <span class="cmt">// 2. Agrupar por ciudad</span>
+        <span class="key-c">edadPromedio</span>: { <span class="str">$avg</span>: <span class="str">"$edad"</span> }  <span class="cmt">// 3. Calcular promedio de edad</span>
+    }},
+    { <span class="str">$project</span>: {
+        <span class="key-c">ciudad</span>: <span class="str">"$_id"</span>,
+        <span class="key-c">edadPromedio</span>: <span class="num">1</span>,
+        <span class="key-c">_id</span>: <span class="num">0</span>
+    }}
+  ])</div>
+    </section>
+
+    <!-- SECCIÓN 11 -->
+    <section id="java">
+      <div class="section-number">XI · Integración con Java</div>
+      <h2>Conexión a MongoDB desde Java</h2>
+
+      <p>MongoDB provee un <strong>driver oficial para Java</strong> que permite interactuar con la base de datos desde aplicaciones escritas en ese lenguaje. Esto es especialmente relevante para proyectos Java como los que se desarrollan con Spring Boot, que es el framework que ya conoces de tu proyecto <em>dulcería</em>.</p>
+
+      <p>A continuación se analiza el código de ejemplo presentado en la diapositiva, línea por línea:</p>
+
+      <div class="code-block"><span class="cmt">// 1. Crear la conexión al servidor de MongoDB</span>
+  <span class="kw">MongoClient</span> mongo = <span class="kw">new</span> MongoClient(<span class="str">"localhost"</span>, <span class="num">27017</span>);
+
+  <span class="cmt">// 2. Seleccionar la base de datos</span>
+  <span class="kw">MongoDatabase</span> db = mongo.getDatabase(<span class="str">"miDB"</span>);
+
+  <span class="cmt">// 3. Seleccionar la colección (como elegir una tabla)</span>
+  <span class="kw">MongoCollection</span>&lt;<span class="kw">Document</span>&gt; col = db.getCollection(<span class="str">"usuarios"</span>);
+
+  <span class="cmt">// 4. Crear un documento a insertar</span>
+  <span class="kw">Document</span> doc = <span class="kw">new</span> Document(<span class="str">"nombre"</span>, <span class="str">"Ana"</span>).append(<span class="str">"edad"</span>, <span class="num">25</span>);
+  col.insertOne(doc);   <span class="cmt">// Insertar el documento en la colección</span>
+
+  <span class="cmt">// 5. Buscar documentos con edad = 25</span>
+  <span class="kw">FindIterable</span>&lt;<span class="kw">Document</span>&gt; docs = col.find(eq(<span class="str">"edad"</span>, <span class="num">25</span>));
+
+  <span class="cmt">// 6. Iterar sobre los resultados e imprimirlos en formato JSON</span>
+  <span class="kw">for</span> (<span class="kw">Document</span> d : docs)
+      System.out.println(d.toJson());</div>
+
+      <p>Descripción de cada paso:</p>
+      <ol>
+        <li><strong>MongoClient</strong>: establece la conexión con el servidor de MongoDB. El parámetro <code>"localhost"</code> indica que MongoDB corre en la misma máquina; <code>27017</code> es el puerto predeterminado de MongoDB.</li>
+        <li><strong>getDatabase("miDB")</strong>: selecciona la base de datos con la que queremos trabajar. Si no existe, MongoDB la crea automáticamente al insertar el primer documento.</li>
+        <li><strong>getCollection("usuarios")</strong>: selecciona la colección. De igual forma, se crea si no existe.</li>
+        <li><strong>new Document(...).append(...)</strong>: construye el documento Java que se insertará. Es similar a crear un mapa de clave-valor.</li>
+        <li><strong>col.find(eq(...))</strong>: ejecuta una búsqueda. El método <code>eq()</code> es un helper que construye la condición de igualdad.</li>
+        <li><strong>d.toJson()</strong>: convierte el documento Java a su representación textual JSON para mostrarlo en pantalla.</li>
+      </ol>
+    </section>
+
+    <!-- SECCIÓN 12 -->
+    <section id="resumen">
+      <div class="section-number">XII · Resumen final</div>
+      <h2>Resumen final</h2>
+
+      <p>MongoDB representa una solución práctica y madura para los problemas que las bases de datos relacionales no resuelven bien: datos heterogéneos, estructuras cambiantes, alta velocidad de escritura y lectura, y escalabilidad masiva. Aquí están los cuatro pilares a recordar:</p>
+
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="card-icon">📄</div>
+          <h4>Documentos BSON</h4>
+          <p>La unidad de datos es el documento: pares clave-valor en formato BSON. Flexible, anidable y sin esquema fijo obligatorio.</p>
+        </div>
+        <div class="summary-card">
+          <div class="card-icon">🗂️</div>
+          <h4>Colecciones</h4>
+          <p>Agrupan documentos relacionados. Equivalen a las tablas de SQL, pero sin exigir un esquema uniforme entre documentos.</p>
+        </div>
+        <div class="summary-card">
+          <div class="card-icon">🔍</div>
+          <h4>Consultas y operadores</h4>
+          <p>Con <code>find()</code> y operadores como <code>$gt</code>, <code>$or</code>, <code>$in</code>, se pueden filtrar documentos con gran precisión.</p>
+        </div>
+        <div class="summary-card">
+          <div class="card-icon">⚙️</div>
+          <h4>Agregaciones</h4>
+          <p>El pipeline de agregación (<code>$match</code>, <code>$group</code>, <code>$avg</code>…) permite análisis de datos complejos sin salir de MongoDB.</p>
+        </div>
+      </div>
+
+      <h3>Tabla de referencia rápida</h3>
+      <table>
+        <thead>
+          <tr><th>Concepto</th><th>Descripción</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>MongoDB</strong></td><td>SGBD NoSQL orientado a documentos, flexible y escalable.</td></tr>
+          <tr><td><strong>BSON</strong></td><td>Formato binario de almacenamiento basado en JSON. Soporta más tipos de datos.</td></tr>
+          <tr><td><strong>Documento</strong></td><td>Unidad básica de datos; conjunto de pares clave-valor.</td></tr>
+          <tr><td><strong>Colección</strong></td><td>Grupo de documentos. Análogo a una tabla SQL.</td></tr>
+          <tr><td><strong>_id</strong></td><td>Campo obligatorio; identifica unívocamente a cada documento.</td></tr>
+          <tr><td><strong>Embedding</strong></td><td>Incluir sub-documentos dentro de un documento. Ideal para relaciones 1:1.</td></tr>
+          <tr><td><strong>Referencias</strong></td><td>Guardar el <code>_id</code> de otro documento. Ideal para relaciones N:M.</td></tr>
+          <tr><td><strong>find()</strong></td><td>Comando para buscar documentos. Equivale a <code>SELECT</code> en SQL.</td></tr>
+          <tr><td><strong>updateOne/Many()</strong></td><td>Modifica uno o varios documentos que cumplan el filtro.</td></tr>
+          <tr><td><strong>$set</strong></td><td>Operador de actualización parcial: solo modifica los campos indicados.</td></tr>
+          <tr><td><strong>aggregate()</strong></td><td>Pipeline de procesamiento para consultas analíticas avanzadas.</td></tr>
+          <tr><td><strong>MongoClient (Java)</strong></td><td>Clase del driver oficial Java para conectarse a MongoDB.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <footer>
+      <p>Resumen elaborado con base en las diapositivas del Dr. Edgard Iván Benítez Guerrero &mdash; Bases de Datos Post-Relacionales, FEI · Universidad Veracruzana.</p>
+    </footer>
+
+  </div>
+</body>
+</html>

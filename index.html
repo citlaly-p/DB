@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Índice · Bases de datos post-relacionales</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700&family=Source+Sans+3:wght@300;400;600&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      background: #f7f5f0;
+      color: #1a1a1a;
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    h1 {
+      font-family: 'Lora', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #2a5298;
+      margin-bottom: 0.5rem;
+    }
+
+    .sub {
+      font-size: 1.1rem;
+      color: #6b6560;
+      border-top: 2px solid #ddd8ce;
+      display: inline-block;
+      padding-top: 0.5rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid #ddd8ce;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+      border-color: #2a5298;
+    }
+
+    .card-header {
+      background: #2a5298;
+      color: white;
+      padding: 1rem;
+      font-family: 'Lora', serif;
+      font-weight: 600;
+      font-size: 1.2rem;
+    }
+
+    .card-body {
+      padding: 1.2rem;
+    }
+
+    .card-body p {
+      color: #4a4540;
+      margin-bottom: 0.5rem;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      background: #eaf0fb;
+      color: #2a5298;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      display: inline-block;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #ddd8ce;
+      color: #6b6560;
+      font-size: 0.85rem;
+    }
+
+    hr {
+      margin: 0.5rem 0;
+      border: 0;
+      height: 1px;
+      background: #ddd8ce;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Bases de Datos Post-Relacionales</h1>
+    <div class="sub">Resúmenes académicos · Universidad Veracruzana</div>
+  </header>
+
+  <div class="grid">
+    <a href="Conceptos_Fundamentales.html" class="card">
+      <div class="card-header">Conceptos Fundamentales</div>
+      <div class="card-body">
+        <p>Evolución de los modelos de BD, contribuciones, categorías y comparativa.</p>
+        <span class="badge">Modelo relacional · Jerárquico · Red</span>
+      </div>
+    </a>
+
+    <a href="Objeto_Relacional.html" class="card">
+      <div class="card-header">Objeto‑Relacional (SQL-OR)</div>
+      <div class="card-body">
+        <p>Tipos estructurados, métodos, herencia, OID y manipulación con SQL-OR.</p>
+        <span class="badge">PostgreSQL · Oracle · Tipos complejos</span>
+      </div>
+    </a>
+
+    <a href="MongoDB.html" class="card">
+      <div class="card-header">MongoDB — Semi‑estructuradas</div>
+      <div class="card-body">
+        <p>Documentos BSON, colecciones, operadores, agregaciones y conexión desde Java.</p>
+        <span class="badge">NoSQL · JSON · Escalabilidad horizontal</span>
+      </div>
+    </a>
+
+    <a href="Semi_Estructurada.html" class="card">
+      <div class="card-header">Modelo OEM & LOREL</div>
+      <div class="card-body">
+        <p>Grafo de objetos, DataGuides, lenguaje LOREL y consultas por caminos.</p>
+        <span class="badge">OEM · Esquema dinámico · Expresiones de ruta</span>
+      </div>
+    </a>
+  </div>
+
+  <footer>
+    <p>Material basado en las diapositivas del Dr. Edgard Iván Benítez Guerrero — FEI · Universidad Veracruzana</p>
+    <p>📁 Usa el menú para navegar entre los temas. Cada página incluye su propio índice interno.</p>
+  </footer>
+</div>
+</body>
+</html>

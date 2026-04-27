@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Evolución de los Modelos de Bases de Datos — Resumen</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f7f5f0;
+      --surface:   #ffffff;
+      --border:    #ddd8ce;
+      --accent:    #2a5298;
+      --accent2:   #c0392b;
+      --text:      #1a1a1a;
+      --muted:     #6b6560;
+      --tag-bg:    #eaf0fb;
+      --code-bg:   #1e2a3a;
+    }
+
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      line-height: 1.75;
+      color: var(--text);
+      background: var(--bg);
+      padding: 2rem 1rem 4rem;
+    }
+
+    .page {
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    /* ── HEADER ── */
+    header {
+      border-bottom: 3px solid var(--accent);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .badge {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.65rem;
+      border-radius: 3px;
+      margin-bottom: 0.75rem;
+    }
+    header h1 {
+      font-family: 'Lora', serif;
+      font-size: 2.1rem;
+      font-weight: 700;
+      line-height: 1.25;
+      margin-bottom: 0.4rem;
+    }
+
+    /* ── TOC ── */
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 6px;
+      padding: 1.4rem 1.6rem;
+      margin-bottom: 2.5rem;
+    }
+    .toc h2 {
+      font-family: 'Lora', serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.8rem;
+    }
+    .toc ol { padding-left: 1.2rem; }
+    .toc a { color: var(--text); text-decoration: none; font-size: 0.95rem; }
+    .toc a:hover { color: var(--accent); text-decoration: underline; }
+
+    /* ── SECTIONS ── */
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2rem 2.2rem;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    section::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 4px; height: 100%;
+      background: var(--accent);
+      border-radius: 8px 0 0 8px;
+    }
+
+    .section-number {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: 3px;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+    }
+
+    h2 { font-family: 'Lora', serif; font-size: 1.5rem; margin-bottom: 1rem; }
+    h3 { font-family: 'Lora', serif; font-size: 1.15rem; color: var(--accent); margin: 1.5rem 0 0.6rem; border-bottom: 1px dashed var(--border); }
+
+    p { margin-bottom: 1rem; }
+    ul { padding-left: 1.4rem; margin-bottom: 1rem; }
+    li { margin-bottom: 0.45rem; }
+
+    /* ── TABLES ── */
+    table { width: 100%; border-collapse: collapse; margin: 1.2rem 0; font-size: 0.93rem; }
+    th { background: var(--accent); color: #fff; padding: 0.6rem 0.9rem; text-align: left; }
+    td { padding: 0.55rem 0.9rem; border-bottom: 1px solid var(--border); }
+    tr:nth-child(even) td { background: #f4f7fd; }
+
+    /* ── KEY CONCEPT ── */
+    .key {
+      background: var(--tag-bg);
+      border: 1px solid #c5d8f8;
+      border-left: 4px solid var(--accent);
+      border-radius: 6px;
+      padding: 1rem 1.2rem;
+      margin: 1.2rem 0;
+    }
+    .key-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--accent); }
+
+    footer { text-align: center; font-size: 0.82rem; color: var(--muted); margin-top: 3rem; border-top: 1px solid var(--border); padding-top: 1.5rem; }
+  </style>
+</head>
+<body>
+  <div style="margin: 1rem 0 1rem 1rem;">
+    <a href="index.html" style="background: #2a5298; color: white; padding: 0.4rem 0.8rem; text-decoration: none; border-radius: 6px; font-weight: 600;">← Volver al índice principal</a>
+  </div>
+  <div class="page">
+
+    <header>
+      <div class="badge">Sistemas de Gestión de Datos</div>
+      <h1>Evolución de los Modelos de BD</h1>
+      <p style="color: var(--muted); font-style: italic;">Resumen de contribuciones y categorías de modelos</p>
+    </header>
+
+    <div class="toc">
+      <h2>Contenido</h2>
+      <ol>
+        <li><a href="#enfoque">Contribuciones del enfoque BD</a></li>
+        <li><a href="#categorias">Categorías de modelos</a></li>
+        <li><a href="#pre-relacionales">Modelos Pre-Relacionales</a></li>
+        <li><a href="#relacional">Modelo Relacional</a></li>
+        <li><a href="#post-relacionales">Modelos Post-Relacionales</a></li>
+      </ol>
+    </div>
+
+    <section id="enfoque">
+      <div class="section-number">I · Fundamentos</div>
+      <h2>Contribuciones del enfoque BD</h2>
+      <p>El uso de Bases de Datos ha permitido estructurar la información de manera que sea eficiente y segura para el usuario.</p>
+      <ul>
+        <li><strong>Modelos de datos:</strong> Estructuras (esquemas e instancias) que organizan la información.</li>
+        <li><strong>Lenguaje de consulta:</strong> Herramientas como SQL, QUEL o QBE para acceder a los datos.</li>
+        <li><strong>Transacciones ACID:</strong> Garantizan Atomicidad, Consistencia, Aislamiento y Durabilidad.</li>
+        <li><strong>Persistencia:</strong> Asegura que los datos sobrevivan al proceso que los creó.</li>
+      </ul>
+    </section>
+
+    <section id="categorias">
+      <div class="section-number">II · Clasificación</div>
+      <h2>Categorías de modelos de datos</h2>
+      <p>Existen tres grandes niveles de estructuración según el esquema utilizado:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Estructuración</th>
+            <th>Esquema</th>
+            <th>Ejemplos</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Estructurado</strong></td>
+            <td>A priori</td>
+            <td>Relacional, Jerárquico, Red, OO</td>
+          </tr>
+          <tr>
+            <td><strong>Semi-estructurado</strong></td>
+            <td>Implícito</td>
+            <td>XML, JSON</td>
+          </tr>
+          <tr>
+            <td><strong>No estructurado</strong></td>
+            <td>Sin esquema</td>
+            <td>Texto, Imagen, Video, Audio</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="pre-relacionales">
+      <div class="section-number">III · Historia</div>
+      <h2>Modelos Pre-Relacionales</h2>
+      <p>Surgieron en los años 60 como las primeras soluciones comerciales:</p>
+      
+      <h3>Modelo Jerárquico (IBM, 1965)</h3>
+      <ul>
+        <li>Estructura de <strong>árbol</strong>: un hijo solo tiene un padre.</li>
+        <li><strong>Limitación:</strong> No permite relaciones muchos a muchos y genera redundancia.</li>
+      </ul>
+
+      <h3>Modelo en Red (Honeywell, 1964)</h3>
+      <ul>
+        <li>Estructura de grafo: un hijo puede tener <strong>varios padres</strong>.</li>
+        <li><strong>Limitación:</strong> Poca flexibilidad para cambios estructurales y navegación compleja.</li>
+      </ul>
+    </section>
+
+    <section id="relacional">
+      <div class="section-number">IV · El Estándar</div>
+      <h2>Modelo Relacional</h2>
+      <p>Propuesto por <strong>E.F. Codd</strong> en 1970, es el modelo dominante desde los años 80.</p>
+      
+      <div class="key">
+        <div class="key-label">📌 Fundamento Matemático</div>
+        Basado en el álgebra y el cálculo de predicados, representando los datos en <strong>tablas</strong>.
+      </div>
+
+      <h3>Limitaciones identificadas</h3>
+      <p>A pesar de su éxito, presenta retos en aplicaciones modernas:</p>
+      <ul>
+        <li><strong>Impedance mismatch:</strong> Diferencia entre el modelo relacional y lenguajes de programación OO.</li>
+        <li><strong>Dominios fijos:</strong> Limitado a tipos alfanuméricos y factuales; no apto para CAD o datos geográficos.</li>
+      </ul>
+    </section>
+
+    <section id="post-relacionales">
+      <div class="section-number">V · Modernidad</div>
+      <h2>Modelos Post-Relacionales</h2>
+      <p>Nuevas arquitecturas diseñadas para superar las limitaciones del modelo plano.</p>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>Modelo</th>
+            <th>Características Clave</th>
+            <th>Sistemas</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Orientado a Objetos</strong></td>
+            <td>Encapsulación, Herencia, OID.</td>
+            <td>Gemstone, O2</td>
+          </tr>
+          <tr>
+            <td><strong>Objeto-Relacional</strong></td>
+            <td>Tablas con tipos estructurados y métodos.</td>
+            <td>PostgreSQL, Oracle</td>
+          </tr>
+          <tr>
+            <td><strong>Semi-estructurado</strong></td>
+            <td>Esquema implícito, ideal para NoSQL.</td>
+            <td>MongoDB, Neo4J</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    <section>
+      <div class="section-number">VI · Conclusión</div>
+      <h2>Tabla Comparativa Global</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Modelo</th>
+            <th>Estructura</th>
+            <th>Esquema</th>
+            <th>Relaciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Jerárquico</td>
+            <td>Árbol</td>
+            <td>A priori</td>
+            <td>1 padre por nodo</td>
+          </tr>
+          <tr>
+            <td>Relacional</td>
+            <td>Tablas</td>
+            <td>A priori</td>
+            <td>Claves foráneas</td>
+          </tr>
+          <tr>
+            <td>OO</td>
+            <td>Objetos</td>
+            <td>A priori</td>
+            <td>Referencias directas</td>
+          </tr>
+          <tr>
+            <td>Semi-estructurado</td>
+            <td>Árbol / Grafo</td>
+            <td>Implícito</td>
+            <td>Implícitas en documento</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <footer>
+      <p>Resumen elaborado con base en las diapositivas del Dr. Edgard Iván Benítez Guerrero &mdash; Bases de Datos Post-Relacionales, FEI · Universidad Veracruzana.</p>
+    </footer>
+
+  </div>
+</body>
+</html>

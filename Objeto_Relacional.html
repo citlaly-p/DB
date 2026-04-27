@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bases de Datos Objeto-Relacionales — Compendio Completo</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f7f5f0;
+      --surface:   #ffffff;
+      --border:    #ddd8ce;
+      --accent:    #2a5298;
+      --accent2:   #c0392b;
+      --accent3:   #16a085;
+      --text:      #1a1a1a;
+      --muted:     #6b6560;
+      --tag-bg:    #eaf0fb;
+      --tag-text:  #2a5298;
+      --code-bg:   #1e2a3a;
+      --code-text: #e8f4f0;
+    }
+
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 1.75;
+      color: var(--text);
+      background: var(--bg);
+      padding: 2rem 1rem 4rem;
+    }
+
+    .page {
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    /* ── HEADER ── */
+    header {
+      border-bottom: 3px solid var(--accent);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .badge {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.65rem;
+      border-radius: 3px;
+      margin-bottom: 0.75rem;
+    }
+    header h1 {
+      font-family: 'Lora', serif;
+      font-size: 2.1rem;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--text);
+      margin-bottom: 0.4rem;
+    }
+    header p.subtitle {
+      font-size: 1rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    /* ── TABLE OF CONTENTS ── */
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 6px;
+      padding: 1.4rem 1.6rem;
+      margin-bottom: 2.5rem;
+    }
+    .toc h2 {
+      font-family: 'Lora', serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.8rem;
+    }
+    .toc ol {
+      padding-left: 1.2rem;
+    }
+    .toc li {
+      margin-bottom: 0.3rem;
+    }
+    .toc a {
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.95rem;
+    }
+    .toc a:hover { color: var(--accent); text-decoration: underline; }
+
+    /* ── SECTIONS ── */
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2rem 2.2rem;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    section::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 4px; height: 100%;
+      background: var(--accent);
+      border-radius: 8px 0 0 8px;
+    }
+
+    .section-number {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 0.15rem 0.5rem;
+      border-radius: 3px;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      font-family: 'Lora', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 1rem;
+      line-height: 1.3;
+    }
+    h3 {
+      font-family: 'Lora', serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 1.5rem 0 0.6rem;
+      padding-bottom: 0.3rem;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    p { margin-bottom: 1rem; }
+    p:last-child { margin-bottom: 0; }
+
+    strong { font-weight: 600; color: var(--text); }
+    em { font-style: italic; color: var(--muted); }
+
+    ul, ol {
+      padding-left: 1.4rem;
+      margin-bottom: 1rem;
+    }
+    li { margin-bottom: 0.45rem; }
+    li:last-child { margin-bottom: 0; }
+
+    /* ── ANALOGY BOX ── */
+    .analogy {
+      background: #fdf8ee;
+      border: 1px solid #e8d9a8;
+      border-left: 4px solid #e6b800;
+      border-radius: 6px;
+      padding: 1rem 1.2rem;
+      margin: 1.2rem 0;
+      font-size: 0.93rem;
+    }
+    .analogy .analogy-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #9a7400;
+      margin-bottom: 0.4rem;
+    }
+
+    /* ── KEY CONCEPT ── */
+    .key {
+      background: var(--tag-bg);
+      border: 1px solid #c5d8f8;
+      border-left: 4px solid var(--accent);
+      border-radius: 6px;
+      padding: 1rem 1.2rem;
+      margin: 1.2rem 0;
+      font-size: 0.93rem;
+    }
+    .key .key-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.4rem;
+    }
+
+    /* ── CODE BLOCK ── */
+    .code-block {
+      background: var(--code-bg);
+      color: var(--code-text);
+      border-radius: 6px;
+      padding: 1.1rem 1.4rem;
+      margin: 1.2rem 0;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.88rem;
+      line-height: 1.7;
+      overflow-x: auto;
+    }
+    .code-block .kw  { color: #79c0ff; font-weight: 600; }
+    .code-block .str { color: #a5d6a7; }
+    .code-block .op  { color: #ffb74d; }
+    .code-block .cmt { color: #8b9cb0; font-style: italic; }
+    .code-block .result-label {
+      display: block;
+      color: #ef9a9a;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── TABLE ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.2rem 0;
+      font-size: 0.93rem;
+    }
+    th {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      padding: 0.6rem 0.9rem;
+      text-align: left;
+    }
+    td {
+      padding: 0.55rem 0.9rem;
+      border-bottom: 1px solid var(--border);
+    }
+    tr:nth-child(even) td { background: #f4f7fd; }
+    tr:last-child td { border-bottom: none; }
+
+    /* ── SUMMARY CARD ── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .summary-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem 1.1rem;
+    }
+    .summary-card .card-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.4rem;
+    }
+    .summary-card h4 {
+      font-family: 'Lora', serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+      color: var(--accent);
+    }
+    .summary-card p {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-bottom: 0;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <div style="margin: 1rem 0 1rem 1rem;">
+    <a href="index.html" style="background: #2a5298; color: white; padding: 0.4rem 0.8rem; text-decoration: none; border-radius: 6px; font-weight: 600;">← Volver al índice principal</a>
+  </div>
+  <div class="page">
+
+    <header>
+      <div class="badge">Modelos de Datos Avanzados</div>
+      <h1>Bases de Datos Objeto-Relacionales (SQL-OR)</h1>
+      <p class="subtitle">Resumen técnico integral de la arquitectura y manipulación de datos</p>
+    </header>
+
+    <div class="toc">
+      <h2>Contenido</h2>
+      <ol>
+        <li><a href="#introduccion">Introducción: Ventajas y Limitaciones</a></li>
+        <li><a href="#tipos-estructurados">Modelo de Datos: Tipos Estructurados</a></li>
+        <li><a href="#referencias">Identidad y Referencias (OID)</a></li>
+        <li><a href="#metodos">Comportamiento: Métodos</a></li>
+        <li><a href="#herencia">Jerarquías: Herencia de Tipos y Tablas</a></li>
+        <li><a href="#manipulacion">Manipulación de Datos con SQL-OR</a></li>
+        <li><a href="#resumen">Resumen de Conceptos y Sintaxis</a></li>
+      </ol>
+    </div>
+
+    <section id="introduccion">
+      <div class="section-number">I · Fundamentos</div>
+      <h2>Introducción</h2>
+      <p>El modelo Objeto-Relacional (OR) combina la robustez del modelo relacional con las capacidades de modelado de la orientación a objetos.</p>
+      
+      <div class="analogy">
+        <div class="analogy-label">Enfoque Híbrido</div>
+        Representa una evolución del estándar SQL (SQL:1999 y posteriores) para manejar datos complejos sin perder la integridad transaccional del mundo relacional.
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Ventajas OR</th>
+            <th>Limitaciones OR</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Mayor flexibilidad</strong> y modelado más natural.</td>
+            <td>Es un enfoque <strong>más práctico que teórico</strong>.</td>
+          </tr>
+          <tr>
+            <td>Robustez y confiabilidad heredadas del relacional.</td>
+            <td>La compatibilidad con sistemas limita la integración.</td>
+          </tr>
+          <tr>
+            <td>Combina SQL con tipos, herencia y métodos.</td>
+            <td>Diseño de esquemas OO puede ser complicado.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="tipos-estructurados">
+      <div class="section-number">II · Estructuras</div>
+      <h2>Modelo de Datos: Tipos Estructurados</h2>
+      <p>Permiten definir atributos complejos que rompen con la atomicidad del modelo relacional tradicional.</p>
+
+      <h3>1. Tipo Fila (Row type)</h3>
+      <p>Representa una tupla compleja definida por el usuario que puede usarse como tipo de dato en una columna.</p>
+      <div class="code-block">
+        <span class="kw">CREATE TYPE</span> Publisher <span class="kw">AS ROW</span> (<br>
+        &nbsp;&nbsp;name <span class="str">varchar(20)</span>,<br>
+        &nbsp;&nbsp;branch <span class="str">varchar(20)</span><br>
+        );
+      </div>
+
+      <h3>2. Tipo Arreglo (Array type)</h3>
+      <p>Una colección de valores del mismo tipo con un tamaño máximo definido.</p>
+      <div class="code-block">
+        <span class="str">authors varchar(20) ARRAY[10];</span> <span class="cmt">-- Colección de hasta 10 autores</span>
+      </div>
+
+      <h3>3. Relación anidada</h3>
+      <p>Permite que una tabla contenga otra tabla como atributo, permitiendo jerarquías de datos complejas.</p>
+      <div class="code-block">
+        <span class="kw">CREATE TYPE</span> AddressTypeTable <span class="kw">AS TABLE OF</span> AddressType;<br><br>
+        <span class="kw">CREATE TYPE</span> Person <span class="kw">AS</span> (<br>
+        &nbsp;&nbsp;name <span class="str">CHAR(30)</span>,<br>
+        &nbsp;&nbsp;address <span class="str">AddressTypeTable</span><br>
+        ); <span class="cmt">--</span>
+      </div>
+    </section>
+
+    <section id="referencias">
+      <div class="section-number">III · Identidad</div>
+      <h2>Identidad y Referencias</h2>
+      <p>Las referencias permiten que una tupla apunte a otra celda en lugar de incluir físicamente los datos, funcionando como punteros gestionados por la base de datos.</p>
+      
+      <div class="key">
+        <div class="key-label">Tipos de OID (Identificadores de Objeto)</div>
+        <ul>
+          <li><strong>System generated:</strong> El sistema lo genera de forma única y automática.</li>
+          <li><strong>User generated:</strong> El usuario provee y gestiona el valor manualmente.</li>
+          <li><strong>Derived:</strong> Se genera automáticamente derivándolo de la llave primaria.</li>
+        </ul>
+      </div>
+
+      <h3>Ejemplos de creación con OID</h3>
+      <div class="code-block">
+        <span class="cmt">-- OID generado por el sistema</span><br>
+        <span class="kw">CREATE TABLE</span> people <span class="kw">OF</span> Person <span class="kw">REF IS</span> oid <span class="kw">SYSTEM GENERATED</span>;<br><br>
+        <span class="cmt">-- OID derivado de la llave primaria</span><br>
+        <span class="kw">CREATE TABLE</span> people <span class="kw">OF</span> Person <span class="kw">REF IS</span> oid <span class="kw">DERIVED</span>;
+      </div>
+    </section>
+
+    <section id="metodos">
+      <div class="section-number">IV · Comportamiento</div>
+      <h2>Métodos</h2>
+      <p>Operaciones asociadas a un tipo que constan de una firma (declaración en el tipo) y un cuerpo (definición por separado).</p>
+      
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="card-icon">⚙️</div>
+          <h4>Constructores</h4>
+          <p>Pueden ser por defecto (automáticos) o definidos por el usuario.</p>
+        </div>
+        <div class="summary-card">
+          <div class="card-icon">🧠</div>
+          <h4>Lógica</h4>
+          <p>Los métodos generales operan sobre la instancia actual usando <em>self</em>.</p>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <span class="cmt">-- 1. Declaración de la firma</span><br>
+        <span class="kw">CREATE TYPE</span> Employee <span class="kw">AS</span> (name <span class="str">varchar(20)</span>, salary <span class="str">integer</span>) <br>
+        <span class="kw">METHOD</span> giveraise (percent <span class="str">integer</span>);<br><br>
+        <span class="cmt">-- 2. Definición del cuerpo</span><br>
+        <span class="kw">CREATE METHOD</span> giveraise (percent <span class="str">integer</span>) <span class="kw">FOR</span> Employee<br>
+        <span class="kw">BEGIN</span><br>
+        &nbsp;&nbsp;<span class="kw">SET</span> self.salary = self.salary + (self.salary * percent) / 100;<br>
+        <span class="kw">END</span>;
+      </div>
+    </section>
+
+    <section id="herencia">
+      <div class="section-number">V · Jerarquías</div>
+      <h2>Herencia de Tipos y Tablas</h2>
+      
+      <h3>Herencia de tipos (UNDER)</h3>
+      <p>Los subtipos heredan todos los atributos y pueden redefinir métodos del supertipo original.</p>
+      <div class="code-block">
+        <span class="kw">CREATE TYPE</span> Student <span class="kw">UNDER</span> Person (<br>
+        &nbsp;&nbsp;degree <span class="str">varchar(20)</span>,<br>
+        &nbsp;&nbsp;department <span class="str">varchar(20)</span><br>
+        );
+      </div>
+
+      <h3>Herencia de tablas (INHERITS)</h3>
+      <p>Las subtablas heredan columnas de la supertabla. Una tupla insertada en la subtabla es visible automáticamente en la supertabla.</p>
+      <div class="code-block">
+        <span class="kw">CREATE TABLE</span> students (<br>
+        &nbsp;&nbsp;degree <span class="str">varchar(20)</span><br>
+        ) <span class="kw">INHERITS</span> (people); <span class="cmt">-- Herencia de estructura de tabla</span>
+      </div>
+    </section>
+
+    <section id="manipulacion">
+        <div class="section-number">VI · Operaciones</div>
+        <h2>Manipulación de Datos con SQL-OR</h2>
+        
+        <p>La manipulación de datos en SQL-OR extiende el estándar tradicional para permitir la gestión de tipos complejos y colecciones de forma nativa.</p>
+
+        <h3>1. Inserción</h3>
+        <p>Al insertar datos, se deben utilizar constructores específicos para tipos estructurados (<code>ROW</code>) y colecciones (<code>ARRAY</code>).</p>
+        
+        <div class="code-block">
+          <span class="kw">INSERT INTO</span> Books <span class="kw">VALUES</span> (<br>
+          &nbsp;&nbsp;<span class="str">'Compilers'</span>,<br>
+          &nbsp;&nbsp;<span class="kw">ARRAY</span>[<span class="str">'Smith'</span>,<span class="str">'Jones'</span>], <span class="cmt">-- Inserción de colección</span><br>
+          &nbsp;&nbsp;<span class="kw">ROW</span>(<span class="str">'McGraw Hill'</span>,<span class="str">'New York'</span>) <span class="cmt">-- Inserción de tupla (Row Type)</span><br>
+          );
+        </div>
+
+        <h3>2. Consultas y Navegación</h3>
+        <p>El acceso a la información dentro de objetos requiere operadores especializados que permitan profundizar en la estructura de los datos.</p>
+
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="card-icon">🎯</div>
+            <h4>Notación Punto</h4>
+            <p>Acceso a campos internos de un tipo estructurado. Ej: <code>(publisher).name</code>.</p>
+          </div>
+          <div class="summary-card">
+            <div class="card-icon">🔗</div>
+            <h4>Dereferencing (->)</h4>
+            <p>Operador para seguir una referencia (OID) y acceder a los datos del objeto apuntado.</p>
+          </div>
+          <div class="summary-card">
+            <div class="card-icon">📦</div>
+            <h4>Unnesting</h4>
+            <p>Expande una colección a filas individuales mediante la función <code>UNNEST</code>.</p>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <span class="result-label">Ejemplo de Unnesting</span>
+          <span class="kw">SELECT</span> B.title, A <span class="kw">FROM</span> books <span class="kw">AS</span> B, <span class="kw">UNNEST</span>(B.authors) <span class="kw">AS</span> A;
+        </div>
+      </section>
+
+      <section id="resumen">
+        <div class="section-number">VII · Referencia</div>
+        <h2>Resumen de Conceptos y Sintaxis</h2>
+        <p>A continuación se presenta una tabla comparativa de los elementos fundamentales del modelo objeto-relacional.</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Concepto</th>
+              <th>Qué es</th>
+              <th>Sintaxis clave</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Tipo fila</strong></td>
+              <td>Atributo que es una tupla compleja</td>
+              <td><code>CREATE TYPE X AS ROW (...)</code></td>
+            </tr>
+            <tr>
+              <td><strong>Tipo arreglo</strong></td>
+              <td>Atributo que es una colección</td>
+              <td><code>attr varchar(20) ARRAY[10]</code></td>
+            </tr>
+            <tr>
+              <td><strong>Relación anidada</strong></td>
+              <td>Tabla dentro de otra tabla</td>
+              <td><code>CREATE TYPE X AS TABLE OF Y</code></td>
+            </tr>
+            <tr>
+              <td><strong>Método</strong></td>
+              <td>Función asociada al tipo</td>
+              <td><code>METHOD f(...)</code></td>
+            </tr>
+            <tr>
+              <td><strong>Herencia tipo</strong></td>
+              <td>Subtipo hereda atributos</td>
+              <td><code>UNDER</code></td>
+            </tr>
+            <tr>
+              <td><strong>Herencia tabla</strong></td>
+              <td>Subtabla hereda columnas</td>
+              <td><code>INHERITS</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+    <footer>
+      <p>Resumen elaborado con base en las diapositivas del Dr. Edgard Iván Benítez Guerrero &mdash; Bases de Datos Post-Relacionales, FEI · Universidad Veracruzana.</p>
+    </footer>
+
+  </div>
+</body>
+</html>

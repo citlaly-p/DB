@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Neo4J — Bases de Datos Orientadas a Grafos</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f7f5f0;
+      --surface:   #ffffff;
+      --border:    #ddd8ce;
+      --accent:    #2a5298;
+      --accent2:   #c0392b;
+      --accent3:   #16a085;
+      --text:      #1a1a1a;
+      --muted:     #6b6560;
+      --tag-bg:    #eaf0fb;
+      --tag-text:  #2a5298;
+      --code-bg:   #1e2a3a;
+      --code-text: #e8f4f0;
+    }
+
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 1.75;
+      color: var(--text);
+      background: var(--bg);
+      padding: 2rem 1rem 4rem;
+    }
+
+    .page { max-width: 820px; margin: 0 auto; }
+
+    header {
+      border-bottom: 3px solid var(--accent);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .badge {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.65rem;
+      border-radius: 3px;
+      margin-bottom: 0.75rem;
+    }
+    header h1 {
+      font-family: 'Lora', serif;
+      font-size: 2.1rem;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--text);
+      margin-bottom: 0.4rem;
+    }
+    header p.subtitle {
+      font-size: 1rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 6px;
+      padding: 1.4rem 1.6rem;
+      margin-bottom: 2.5rem;
+    }
+    .toc h2 {
+      font-family: 'Lora', serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.8rem;
+    }
+    .toc ol { padding-left: 1.2rem; }
+    .toc li { margin-bottom: 0.3rem; }
+    .toc a { color: var(--text); text-decoration: none; font-size: 0.95rem; }
+    .toc a:hover { color: var(--accent); text-decoration: underline; }
+
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2rem 2.2rem;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    section::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 4px; height: 100%;
+      background: var(--accent);
+      border-radius: 8px 0 0 8px;
+    }
+
+    .section-number {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 0.15rem 0.5rem;
+      border-radius: 3px;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      font-family: 'Lora', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 1rem;
+      line-height: 1.3;
+    }
+    h3 {
+      font-family: 'Lora', serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 1.5rem 0 0.6rem;
+      padding-bottom: 0.3rem;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    p { margin-bottom: 1rem; }
+    p:last-child { margin-bottom: 0; }
+    strong { font-weight: 600; color: var(--text); }
+    em { font-style: italic; color: var(--muted); }
+
+    ul, ol { padding-left: 1.4rem; margin-bottom: 1rem; }
+    li { margin-bottom: 0.45rem; }
+    li:last-child { margin-bottom: 0; }
+
+    .analogy {
+      background: #fdf8ee;
+      border: 1px solid #e8d9a8;
+      border-left: 4px solid #e6b800;
+      border-radius: 6px;
+      padding: 1rem 1.2rem;
+      margin: 1.2rem 0;
+      font-size: 0.93rem;
+    }
+    .analogy .analogy-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #9a7400;
+      margin-bottom: 0.4rem;
+    }
+
+    .key {
+      background: var(--tag-bg);
+      border: 1px solid #c5d8f8;
+      border-left: 4px solid var(--accent);
+      border-radius: 6px;
+      padding: 1rem 1.2rem;
+      margin: 1.2rem 0;
+      font-size: 0.93rem;
+    }
+    .key .key-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.4rem;
+    }
+
+    .warning {
+      background: #fef0f0;
+      border: 1px solid #f5c6c6;
+      border-left: 4px solid var(--accent2);
+      border-radius: 6px;
+      padding: 1rem 1.2rem;
+      margin: 1.2rem 0;
+      font-size: 0.93rem;
+    }
+    .warning .warning-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 0.4rem;
+    }
+
+    .code-block {
+      background: var(--code-bg);
+      color: var(--code-text);
+      border-radius: 6px;
+      padding: 1.1rem 1.4rem;
+      margin: 1.2rem 0;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.88rem;
+      line-height: 1.8;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .code-block .kw   { color: #79c0ff; font-weight: 700; }
+    .code-block .lbl  { color: #f48fb1; font-weight: 600; }
+    .code-block .prop { color: #ffb74d; }
+    .code-block .str  { color: #a5d6a7; }
+    .code-block .num  { color: #ce93d8; }
+    .code-block .rel  { color: #80deea; font-weight: 600; }
+    .code-block .cmt  { color: #8b9cb0; font-style: italic; }
+    .code-block .sym  { color: #ef9a9a; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.2rem 0;
+      font-size: 0.93rem;
+    }
+    th {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      padding: 0.6rem 0.9rem;
+      text-align: left;
+    }
+    td {
+      padding: 0.55rem 0.9rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    tr:nth-child(even) td { background: #f4f7fd; }
+    tr:last-child td { border-bottom: none; }
+
+    /* Grafo SVG ilustrativo */
+    .graph-demo {
+      background: #141d2b;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1.2rem 0;
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .summary-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem 1.1rem;
+    }
+    .summary-card .card-icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
+    .summary-card h4 {
+      font-family: 'Lora', serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+      color: var(--accent);
+    }
+    .summary-card p { font-size: 0.88rem; color: var(--muted); margin-bottom: 0; }
+
+    .cypher-anatomy {
+      background: #f0f4ff;
+      border: 1px solid #c5d8f8;
+      border-radius: 8px;
+      padding: 1.2rem 1.4rem;
+      margin: 1.2rem 0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.92rem;
+      line-height: 2;
+    }
+    .cypher-anatomy .node-sym   { color: #2a5298; font-weight: 700; }
+    .cypher-anatomy .rel-sym    { color: #c0392b; font-weight: 700; }
+    .cypher-anatomy .label-sym  { color: #16a085; font-weight: 700; }
+    .cypher-anatomy .prop-sym   { color: #8e44ad; }
+    .cypher-anatomy .legend     { font-size: 0.8rem; color: var(--muted); font-family: 'Source Sans 3', sans-serif; margin-top: 0.6rem; }
+
+    footer {
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <header>
+    <div class="badge">Bases de Datos Post-Relacionales</div>
+    <h1>Bases de Datos Orientadas a Grafos: Neo4J</h1>
+    <p class="subtitle">Resumen académico detallado — Dr. Edgard Iván Benítez Guerrero</p>
+  </header>
+
+  <!-- TOC -->
+  <div class="toc">
+    <h2>Contenido</h2>
+    <ol>
+      <li><a href="#grafos">¿Qué es un grafo y por qué usarlo como base de datos?</a></li>
+      <li><a href="#modelo">El modelo de datos: nodos, relaciones y propiedades</a></li>
+      <li><a href="#ventajas">Ventajas del modelo de grafos</a></li>
+      <li><a href="#casos">Casos de uso comunes</a></li>
+      <li><a href="#neo4j">Neo4J: el sistema gestor de grafos</a></li>
+      <li><a href="#caracteristicas">Características clave de Neo4J</a></li>
+      <li><a href="#cypher">El lenguaje Cypher: sintaxis y anatomía</a></li>
+      <li><a href="#crear">Crear nodos y relaciones con CREATE</a></li>
+      <li><a href="#consultar">Consultar el grafo con MATCH y RETURN</a></li>
+      <li><a href="#merge">Agregar relaciones con MERGE</a></li>
+      <li><a href="#actualizar">Actualizar propiedades con SET</a></li>
+      <li><a href="#eliminar">Eliminar nodos y relaciones con DELETE</a></li>
+      <li><a href="#resumen">Resumen final y tabla de referencia</a></li>
+    </ol>
+  </div>
+
+  <!-- SECCIÓN 1: QUÉ ES UN GRAFO -->
+  <section id="grafos">
+    <div class="section-number">I · Fundamentos</div>
+    <h2>¿Qué es un grafo y por qué usarlo como base de datos?</h2>
+
+    <p>Antes de hablar de Neo4J, necesitamos comprender el concepto matemático de <strong>grafo</strong>, porque es la piedra angular de todo lo que viene a continuación.</p>
+
+    <p>Un <strong>grafo</strong> es una estructura formada por dos elementos: <strong>nodos</strong> (también llamados vértices) y <strong>arcos</strong> (también llamados aristas o relaciones). Los nodos representan cosas o entidades, y los arcos representan la conexión o relación entre esas cosas.</p>
+
+    <div class="analogy">
+      <div class="analogy-label">🧩 Analogía cotidiana</div>
+      Piensa en un <strong>mapa de metro</strong>. Cada estación es un <em>nodo</em>. Las líneas que conectan estaciones son los <em>arcos</em>. El mapa completo es el <em>grafo</em>. Con ese mapa puedes responder preguntas como: "¿cuántas estaciones hay entre Estación A y Estación Z?" o "¿qué estaciones están conectadas directamente con la Estación Central?" — preguntas que son difíciles en una tabla de datos, pero naturales en un grafo.
+    </div>
+
+    <p>El mundo real está lleno de datos que son <em>inherentemente relacionales</em>: amigos en redes sociales, películas y sus actores, productos y sus compradores, rutas entre ciudades. Las bases de datos relacionales tradicionales (SQL) modelan estas relaciones mediante <strong>tablas y claves foráneas</strong>, lo que implica costosas operaciones de unión (<em>joins</em>) cuando las relaciones son complejas o profundas.</p>
+
+    <p>Las <strong>bases de datos orientadas a grafos</strong> almacenan las relaciones de forma nativa — como parte del modelo de datos, no como una derivación de tablas — lo que hace que navegar esas relaciones sea enormemente más eficiente.</p>
+  </section>
+
+  <!-- SECCIÓN 2: MODELO DE DATOS -->
+  <section id="modelo">
+    <div class="section-number">II · Modelo de datos</div>
+    <h2>El modelo de datos: nodos, relaciones y propiedades</h2>
+
+    <p>El modelo de datos de Neo4J (y de los grafos de propiedad en general) se construye con tres bloques fundamentales:</p>
+
+    <h3>1. Nodos (Nodes)</h3>
+    <p>Los nodos representan las <strong>entidades</strong> del dominio que queremos modelar. En una aplicación de películas, los nodos serían las películas, las personas, los estudios de producción, etc.</p>
+    <p>Cada nodo puede tener:</p>
+    <ul>
+      <li><strong>Etiquetas (Labels):</strong> categorías que clasifican al nodo. Un nodo puede tener varias etiquetas a la vez. Por ejemplo, un nodo podría ser a la vez <code>Person</code> y <code>Director</code>. Las etiquetas se escriben con dos puntos: <code>:Person</code>, <code>:Movie</code>.</li>
+      <li><strong>Propiedades:</strong> atributos del nodo expresados como pares clave-valor. Por ejemplo: <code>name: 'Keanu Reeves'</code>, <code>birthYear: 1964</code>.</li>
+    </ul>
+
+    <div class="analogy">
+      <div class="analogy-label">🧩 Analogía</div>
+      Un nodo es como una <strong>ficha de contacto</strong> en tu teléfono. La etiqueta sería la categoría ("Amigos", "Trabajo"). Las propiedades son los datos de esa ficha: nombre, teléfono, correo.
+    </div>
+
+    <h3>2. Relaciones (Relationships)</h3>
+    <p>Las relaciones conectan dos nodos y representan cómo se relacionan entre sí. Son el elemento más distintivo y poderoso del modelo de grafos. Cada relación tiene tres características obligatorias:</p>
+    <ul>
+      <li><strong>Tipo:</strong> describe la naturaleza de la relación. Por ejemplo: <code>ACTED_IN</code>, <code>DIRECTED</code>, <code>KNOWS</code>. Se escribe entre corchetes: <code>[:ACTED_IN]</code>.</li>
+      <li><strong>Dirección:</strong> las relaciones en Neo4J son dirigidas — tienen un nodo de origen y un nodo de destino. La flecha <code>-&gt;</code> indica la dirección.</li>
+      <li><strong>Propiedades (opcionales):</strong> igual que los nodos, una relación puede tener atributos propios. Por ejemplo, la relación <code>ACTED_IN</code> puede tener la propiedad <code>role: 'Neo'</code> para indicar qué personaje interpretó el actor.</li>
+    </ul>
+
+    <div class="analogy">
+      <div class="analogy-label">🧩 Analogía</div>
+      En una red social, tú y un amigo son <em>nodos</em>. La amistad entre ustedes es la <em>relación</em> (<code>:KNOWS</code>). Si quisieras anotar desde cuándo son amigos, eso sería una <em>propiedad de la relación</em>: <code>since: 2019</code>.
+    </div>
+
+    <h3>3. Propiedades</h3>
+    <p>Las <strong>propiedades</strong> son pares <code>clave: valor</code> que pueden existir tanto en nodos como en relaciones. Son el mecanismo para almacenar los datos concretos dentro del grafo. Los valores pueden ser cadenas de texto, números, booleanos, listas, etc.</p>
+
+    <div class="key">
+      <div class="key-label">📌 Resumen del modelo</div>
+      <strong>Nodo</strong> = entidad (círculo en el diagrama) · tiene <em>etiquetas</em> y <em>propiedades</em><br>
+      <strong>Relación</strong> = conexión entre dos nodos (flecha) · tiene <em>tipo</em>, <em>dirección</em> y opcionalmente <em>propiedades</em><br>
+      <strong>Propiedad</strong> = atributo clave-valor de un nodo o relación
+    </div>
+
+    <!-- Diagrama SVG ilustrativo -->
+    <div class="graph-demo">
+      <svg viewBox="0 0 700 280" width="660" height="260" xmlns="http://www.w3.org/2000/svg" font-family="'Courier New', monospace">
+        <!-- Fondo -->
+        <rect width="700" height="280" fill="#141d2b" rx="8"/>
+
+        <!-- Flecha ACTED_IN Keanu -> Matrix -->
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#80deea"/>
+          </marker>
+          <marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#80deea"/>
+          </marker>
+          <marker id="arr3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#80deea"/>
+          </marker>
+        </defs>
+
+        <!-- Nodo The Matrix (centro) -->
+        <circle cx="350" cy="140" r="50" fill="#1b5e20" stroke="#a5d6a7" stroke-width="2"/>
+        <text x="350" y="134" text-anchor="middle" fill="#a5d6a7" font-size="10" font-weight="bold">:Movie</text>
+        <text x="350" y="148" text-anchor="middle" fill="#ffffff" font-size="11">The Matrix</text>
+        <text x="350" y="162" text-anchor="middle" fill="#aaaaaa" font-size="9">year: 1999</text>
+
+        <!-- Nodo Keanu Reeves (derecha arriba) -->
+        <circle cx="580" cy="60" r="44" fill="#0d47a1" stroke="#90caf9" stroke-width="2"/>
+        <text x="580" y="54" text-anchor="middle" fill="#90caf9" font-size="10" font-weight="bold">:Person</text>
+        <text x="580" y="68" text-anchor="middle" fill="#ffffff" font-size="10">Keanu</text>
+        <text x="580" y="81" text-anchor="middle" fill="#ffffff" font-size="10">Reeves</text>
+
+        <!-- Nodo Carrie-Anne Moss (derecha abajo) -->
+        <circle cx="580" cy="220" r="44" fill="#0d47a1" stroke="#90caf9" stroke-width="2"/>
+        <text x="580" y="214" text-anchor="middle" fill="#90caf9" font-size="10" font-weight="bold">:Person</text>
+        <text x="580" y="228" text-anchor="middle" fill="#ffffff" font-size="9">Carrie-Anne</text>
+        <text x="580" y="241" text-anchor="middle" fill="#ffffff" font-size="10">Moss</text>
+
+        <!-- Nodo Lana Wachowski (izquierda) -->
+        <circle cx="110" cy="140" r="44" fill="#0d47a1" stroke="#90caf9" stroke-width="2"/>
+        <text x="110" y="134" text-anchor="middle" fill="#90caf9" font-size="10" font-weight="bold">:Person</text>
+        <text x="110" y="148" text-anchor="middle" fill="#ffffff" font-size="10">Lana</text>
+        <text x="110" y="161" text-anchor="middle" fill="#ffffff" font-size="10">Wachowski</text>
+
+        <!-- Flecha Keanu -> Matrix (ACTED_IN) -->
+        <line x1="540" y1="82" x2="400" y2="120" stroke="#80deea" stroke-width="1.5" marker-end="url(#arr)"/>
+        <text x="490" y="90" fill="#80deea" font-size="9" text-anchor="middle">ACTED_IN</text>
+        <text x="490" y="102" fill="#ffb74d" font-size="8" text-anchor="middle">role: Neo</text>
+
+        <!-- Flecha Carrie -> Matrix (ACTED_IN) -->
+        <line x1="540" y1="200" x2="400" y2="162" stroke="#80deea" stroke-width="1.5" marker-end="url(#arr2)"/>
+        <text x="490" y="192" fill="#80deea" font-size="9" text-anchor="middle">ACTED_IN</text>
+        <text x="490" y="204" fill="#ffb74d" font-size="8" text-anchor="middle">role: Trinity</text>
+
+        <!-- Flecha Lana -> Matrix (DIRECTED) -->
+        <line x1="154" y1="140" x2="298" y2="140" stroke="#80deea" stroke-width="1.5" marker-end="url(#arr3)"/>
+        <text x="226" y="133" fill="#80deea" font-size="9" text-anchor="middle">DIRECTED</text>
+
+        <!-- Leyenda -->
+        <circle cx="30" cy="252" r="7" fill="#1b5e20" stroke="#a5d6a7" stroke-width="1.5"/>
+        <text x="43" y="256" fill="#cccccc" font-size="9">Película</text>
+        <circle cx="100" cy="252" r="7" fill="#0d47a1" stroke="#90caf9" stroke-width="1.5"/>
+        <text x="113" y="256" fill="#cccccc" font-size="9">Persona</text>
+        <line x1="170" y1="252" x2="200" y2="252" stroke="#80deea" stroke-width="1.5" marker-end="url(#arr)"/>
+        <text x="210" y="256" fill="#cccccc" font-size="9">Relación</text>
+      </svg>
+    </div>
+
+  </section>
+
+  <!-- SECCIÓN 3: VENTAJAS -->
+  <section id="ventajas">
+    <div class="section-number">III · Ventajas</div>
+    <h2>Ventajas del modelo de grafos</h2>
+
+    <h3>1. Esquema flexible para relaciones complejas</h3>
+    <p>En una base de datos relacional, modelar una red social con relaciones de amistad, seguimiento, bloqueo y menciones requeriría múltiples tablas intermedias con <em>joins</em> costosos. En un grafo, simplemente se añaden nuevos tipos de relaciones entre nodos existentes — sin rediseñar esquemas ni crear tablas adicionales.</p>
+
+    <h3>2. Visualización intuitiva</h3>
+    <p>Los datos en grafos son <strong>naturalmente visualizables</strong>: se muestran como diagramas con círculos y flechas. Esto hace que incluso personas sin formación técnica puedan comprender la estructura de los datos con solo ver el diagrama. Neo4J incluye una interfaz gráfica integrada (Neo4J Browser) que muestra los resultados de las consultas como grafos interactivos.</p>
+
+    <h3>3. Consultas expresivas y de alto rendimiento</h3>
+    <p>La gran fortaleza del modelo de grafos es el rendimiento en consultas que navegan múltiples niveles de relaciones. Por ejemplo, en una red social: "¿quiénes son los amigos de los amigos de mis amigos que también conocen a X?" — una consulta que en SQL requeriría varios <em>joins</em> anidados y sería muy lenta en millones de registros. En Neo4J, esta navegación se realiza directamente sobre los punteros del grafo, sin búsquedas en tablas, lo que la hace <strong>órdenes de magnitud más rápida</strong>.</p>
+
+    <table>
+      <thead>
+        <tr><th>Aspecto</th><th>Base de datos relacional (SQL)</th><th>Base de datos de grafos (Neo4J)</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Representación de relaciones</td>
+          <td>Claves foráneas + tablas intermedias</td>
+          <td>Relaciones nativas (parte del modelo)</td>
+        </tr>
+        <tr>
+          <td>Consultas multi-nivel</td>
+          <td>JOIN anidados, costosos</td>
+          <td>Navegación directa, muy rápida</td>
+        </tr>
+        <tr>
+          <td>Visualización</td>
+          <td>Tablas de filas y columnas</td>
+          <td>Diagramas de nodos y arcos</td>
+        </tr>
+        <tr>
+          <td>Esquema</td>
+          <td>Rígido, predefinido</td>
+          <td>Flexible, evolutivo</td>
+        </tr>
+        <tr>
+          <td>Ideal para</td>
+          <td>Datos tabulares uniformes</td>
+          <td>Datos altamente conectados</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- SECCIÓN 4: CASOS DE USO -->
+  <section id="casos">
+    <div class="section-number">IV · Aplicaciones</div>
+    <h2>Casos de uso comunes</h2>
+
+    <p>Las bases de datos de grafos brillan en dominios donde las <strong>conexiones entre los datos son tan importantes como los datos mismos</strong>. Los cinco casos de uso más representativos son:</p>
+
+    <ul>
+      <li>
+        <strong>Redes sociales:</strong> modelar usuarios, amistades, seguimientos, publicaciones y reacciones. Permite responder eficientemente preguntas como "¿tienes amigos en común con esta persona?" o "¿a quién más siguen las personas que te siguen?".
+      </li>
+      <li>
+        <strong>Recomendaciones personalizadas:</strong> plataformas como Netflix o Spotify usan grafos para encontrar patrones: "los usuarios que vieron X también vieron Y". El grafo conecta usuarios con contenidos con etiquetas de gustos y hábitos.
+      </li>
+      <li>
+        <strong>Motores de búsqueda semántica:</strong> construir grafos de conocimiento donde los conceptos se relacionan entre sí, permitiendo responder preguntas que van más allá de palabras clave hacia el <em>significado</em> de la consulta.
+      </li>
+      <li>
+        <strong>Detección de fraudes:</strong> los fraudes suelen dejar patrones de conexiones inusuales entre cuentas, transacciones y personas. Un grafo puede detectar estos patrones complejos en tiempo real, algo inviable con SQL en grandes volúmenes.
+      </li>
+      <li>
+        <strong>Sistemas de conocimiento:</strong> representar ontologías, taxonomías o redes de dependencias (como las dependencias entre paquetes de software o materias de un plan de estudios).
+      </li>
+    </ul>
+  </section>
+
+  <!-- SECCIÓN 5: NEO4J -->
+  <section id="neo4j">
+    <div class="section-number">V · Neo4J</div>
+    <h2>Neo4J: el sistema gestor de grafos</h2>
+
+    <p><strong>Neo4J</strong> (pronunciado "neo-for-jay", de "<em>Neo for Java</em>") es el sistema de gestión de bases de datos orientado a grafos más popular del mundo. Es un <strong>GDBMS</strong> (Graph Database Management System), el equivalente en el mundo de grafos a lo que MySQL es en el mundo relacional.</p>
+
+    <ul>
+      <li>Fue desarrollado por la empresa <strong>Neo4j, Inc.</strong> y lanzado en el año <strong>2007</strong>.</li>
+      <li>Está diseñado específicamente para <strong>datos altamente conectados</strong>, donde las relaciones entre entidades son centrales para las consultas.</li>
+      <li>Implementa el modelo de <strong>grafo de propiedades</strong> (Property Graph): nodos y relaciones que pueden tener propiedades clave-valor.</li>
+      <li>Disponible en versión de comunidad (gratuita) y versión empresarial.</li>
+    </ul>
+
+    <div class="analogy">
+      <div class="analogy-label">🧩 Analogía</div>
+      Si MySQL es la "hoja de cálculo gigante" del mundo de las bases de datos, Neo4J es el "mapa interactivo" — perfecto cuando lo que importa no son solo los datos en sí, sino <em>cómo se conectan</em> entre ellos.
+    </div>
+  </section>
+
+  <!-- SECCIÓN 6: CARACTERÍSTICAS -->
+  <section id="caracteristicas">
+    <div class="section-number">VI · Características</div>
+    <h2>Características clave de Neo4J</h2>
+
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="card-icon">🕸️</div>
+        <h4>Modelo de grafos nativo</h4>
+        <p>Almacena y procesa los datos directamente como un grafo de propiedad, sin conversiones intermedias. Las relaciones son ciudadanos de primera clase.</p>
+      </div>
+      <div class="summary-card">
+        <div class="card-icon">💬</div>
+        <h4>Lenguaje Cypher</h4>
+        <p>Lenguaje de consulta declarativo, diseñado específicamente para grafos. Legible, expresivo y fácil de aprender para quien ya conoce SQL.</p>
+      </div>
+      <div class="summary-card">
+        <div class="card-icon">⚡</div>
+        <h4>Alto rendimiento</h4>
+        <p>Navega relaciones en tiempo constante independientemente del tamaño total del grafo. Las consultas de varios saltos (hop queries) son extremadamente rápidas.</p>
+      </div>
+      <div class="summary-card">
+        <div class="card-icon">🖥️</div>
+        <h4>Visualización integrada</h4>
+        <p>Neo4J Browser permite ver los resultados de las consultas como grafos interactivos y coloridos, facilitando la comprensión y exploración de los datos.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 7: CYPHER -->
+  <section id="cypher">
+    <div class="section-number">VII · Lenguaje Cypher</div>
+    <h2>El lenguaje Cypher: sintaxis y anatomía</h2>
+
+    <p><strong>Cypher</strong> es el lenguaje de consulta de Neo4J. Fue diseñado con un principio elegante: las consultas deben <em>parecerse visualmente</em> a los diagramas de grafos que describen. Es declarativo (dices qué quieres, no cómo buscarlo) y su sintaxis se asemeja a dibujar el patrón de nodos y relaciones que deseas encontrar.</p>
+
+    <h3>Convenciones de escritura en Cypher</h3>
+
+    <div class="cypher-anatomy">
+      <span class="node-sym">( )</span>  ← Los paréntesis representan un <strong>nodo</strong><br>
+      <span class="rel-sym">[ ]</span>  ← Los corchetes representan una <strong>relación</strong><br>
+      <span class="label-sym">:Label</span>  ← Los dos puntos y nombre en mayúscula son una <strong>etiqueta</strong><br>
+      <span class="prop-sym">{ clave: valor }</span>  ← Las llaves contienen <strong>propiedades</strong><br>
+      <span class="rel-sym">--&gt;</span>  ← La flecha indica la <strong>dirección</strong> de la relación<br>
+      <span class="node-sym">a</span>, <span class="node-sym">p</span>, <span class="node-sym">m</span>  ← Las letras minúsculas son <strong>variables</strong> (alias) para referenciar nodos
+      <div class="legend">Convención: etiquetas de nodos en PascalCase (:Person, :Movie) · tipos de relación en MAYÚSCULAS (:ACTED_IN, :DIRECTED)</div>
+    </div>
+
+    <h3>Estructura general de una consulta Cypher</h3>
+    <div class="code-block"><span class="kw">MATCH</span>  <span class="cmt">-- encontrar un patrón existente en el grafo</span>
+<span class="kw">WHERE</span>  <span class="cmt">-- filtrar por condiciones adicionales (opcional)</span>
+<span class="kw">RETURN</span> <span class="cmt">-- especificar qué datos devolver</span></div>
+
+    <p>Existen además otras cláusulas principales: <code>CREATE</code> (crear), <code>MERGE</code> (crear si no existe), <code>SET</code> (actualizar) y <code>DELETE</code> (eliminar). Cada una se verá con ejemplos en las secciones siguientes.</p>
+
+    <h3>Ejemplo introductorio: crear dos nodos con una relación</h3>
+    <div class="code-block"><span class="kw">CREATE</span> (<span class="prop">a</span><span class="lbl">:Person</span> {<span class="prop">name</span>: <span class="str">'Alice'</span>})<span class="sym">-[</span><span class="rel">:KNOWS</span><span class="sym">]-&gt;</span>(<span class="prop">b</span><span class="lbl">:Person</span> {<span class="prop">name</span>: <span class="str">'Bob'</span>})</div>
+
+    <p>Interpretación: <em>"Crea un nodo de tipo Person con nombre Alice, conectado por una relación de tipo KNOWS hacia otro nodo de tipo Person con nombre Bob."</em> En un diagrama esto se vería como: <strong>Alice</strong> → <em>KNOWS</em> → <strong>Bob</strong>.</p>
+  </section>
+
+  <!-- SECCIÓN 8: CREATE -->
+  <section id="crear">
+    <div class="section-number">VIII · Crear datos</div>
+    <h2>Crear nodos y relaciones con CREATE</h2>
+
+    <p>La cláusula <strong><code>CREATE</code></strong> en Cypher es equivalente al <code>INSERT</code> de SQL. Se usa para insertar nuevos nodos y relaciones en el grafo. Analicemos el ejemplo completo del PDF, que construye el grafo de la película <em>The Matrix</em> paso a paso:</p>
+
+    <h3>Paso 1: Crear los nodos</h3>
+    <div class="code-block"><span class="cmt">-- Crear el nodo de la película</span>
+<span class="kw">CREATE</span> (<span class="prop">m</span><span class="lbl">:Movie</span> {<span class="prop">title</span>: <span class="str">'The Matrix'</span>, <span class="prop">year</span>: <span class="num">1999</span>})
+
+<span class="cmt">-- Crear los nodos de las personas</span>
+<span class="kw">CREATE</span> (<span class="prop">p1</span><span class="lbl">:Person</span> {<span class="prop">name</span>: <span class="str">'Keanu Reeves'</span>})
+<span class="kw">CREATE</span> (<span class="prop">p2</span><span class="lbl">:Person</span> {<span class="prop">name</span>: <span class="str">'Carrie-Anne Moss'</span>})
+<span class="kw">CREATE</span> (<span class="prop">p3</span><span class="lbl">:Person</span> {<span class="prop">name</span>: <span class="str">'Lana Wachowski'</span>})</div>
+
+    <p>Desglose de la sintaxis:</p>
+    <ul>
+      <li><code>m</code>, <code>p1</code>, <code>p2</code>, <code>p3</code>: son <strong>variables</strong> locales que permiten referenciar estos nodos más adelante en la misma consulta.</li>
+      <li><code>:Movie</code>, <code>:Person</code>: son las <strong>etiquetas</strong> que clasifican a los nodos.</li>
+      <li><code>{ title: 'The Matrix', year: 1999 }</code>: son las <strong>propiedades</strong> del nodo, escritas como pares clave-valor entre llaves.</li>
+    </ul>
+
+    <h3>Paso 2: Crear las relaciones</h3>
+    <div class="code-block"><span class="cmt">-- Keanu actuó como Neo en The Matrix</span>
+<span class="kw">CREATE</span> (<span class="prop">p1</span>)<span class="sym">-[</span><span class="rel">:ACTED_IN</span> {<span class="prop">role</span>: <span class="str">'Neo'</span>}<span class="sym">]-&gt;</span>(<span class="prop">m</span>)
+
+<span class="cmt">-- Carrie-Anne actuó como Trinity en The Matrix</span>
+<span class="kw">CREATE</span> (<span class="prop">p2</span>)<span class="sym">-[</span><span class="rel">:ACTED_IN</span> {<span class="prop">role</span>: <span class="str">'Trinity'</span>}<span class="sym">]-&gt;</span>(<span class="prop">m</span>)
+
+<span class="cmt">-- Lana dirigió The Matrix</span>
+<span class="kw">CREATE</span> (<span class="prop">p3</span>)<span class="sym">-[</span><span class="rel">:DIRECTED</span><span class="sym">]-&gt;</span>(<span class="prop">m</span>)</div>
+
+    <p>Aquí la sintaxis <code>(p1)-[:ACTED_IN {role: 'Neo'}]-&gt;(m)</code> se lee de izquierda a derecha como: <em>"el nodo p1 (Keanu Reeves) tiene una relación de tipo ACTED_IN con la propiedad role=Neo, apuntando hacia el nodo m (The Matrix)"</em>.</p>
+
+    <div class="key">
+      <div class="key-label">📌 Diferencia entre CREATE y MERGE</div>
+      <code>CREATE</code> crea el elemento <strong>siempre</strong>, incluso si ya existe (puede generar duplicados). <code>MERGE</code> (que veremos después) crea el elemento <strong>solo si no existe</strong>, actuando como un "insertar o ignorar si ya está".
+    </div>
+  </section>
+
+  <!-- SECCIÓN 9: MATCH y RETURN -->
+  <section id="consultar">
+    <div class="section-number">IX · Consultar</div>
+    <h2>Consultar el grafo con MATCH y RETURN</h2>
+
+    <p><strong><code>MATCH</code></strong> es la cláusula de búsqueda en Cypher — el equivalente al <code>SELECT ... FROM ... WHERE</code> de SQL. Su funcionamiento es por <strong>coincidencia de patrones</strong> (<em>pattern matching</em>): se describe el patrón de nodos y relaciones que se desea encontrar, y Neo4J localiza todas las ocurrencias de ese patrón en el grafo.</p>
+
+    <h3>Consulta básica: actores y sus roles</h3>
+    <div class="code-block"><span class="kw">MATCH</span> (<span class="prop">p</span><span class="lbl">:Person</span>)<span class="sym">-[</span><span class="prop">r</span><span class="rel">:ACTED_IN</span><span class="sym">]-&gt;</span>(<span class="prop">m</span><span class="lbl">:Movie</span>)
+<span class="kw">RETURN</span> <span class="prop">p</span>.name, <span class="prop">r</span>.role, <span class="prop">m</span>.title</div>
+
+    <p>Interpretación línea por línea:</p>
+    <ul>
+      <li><code>MATCH (p:Person)-[r:ACTED_IN]-&gt;(m:Movie)</code>: busca en el grafo cualquier combinación donde un nodo de tipo Person esté conectado mediante una relación ACTED_IN hacia un nodo de tipo Movie. Las variables <code>p</code>, <code>r</code> y <code>m</code> capturan cada elemento encontrado.</li>
+      <li><code>RETURN p.name, r.role, m.title</code>: devuelve tres columnas — el nombre de la persona, el rol que interpretó (propiedad de la relación), y el título de la película.</li>
+    </ul>
+
+    <p>El resultado sería una tabla como la siguiente:</p>
+    <table>
+      <thead><tr><th>p.name</th><th>r.role</th><th>m.title</th></tr></thead>
+      <tbody>
+        <tr><td>Keanu Reeves</td><td>Neo</td><td>The Matrix</td></tr>
+        <tr><td>Carrie-Anne Moss</td><td>Trinity</td><td>The Matrix</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Consulta con filtro: actores de una película específica</h3>
+    <div class="code-block"><span class="kw">MATCH</span> (<span class="prop">p</span><span class="lbl">:Person</span>)<span class="sym">-[</span><span class="rel">:ACTED_IN</span><span class="sym">]-&gt;</span>(<span class="prop">m</span><span class="lbl">:Movie</span> {<span class="prop">title</span>: <span class="str">'The Matrix'</span>})
+<span class="kw">RETURN</span> <span class="prop">p</span>.name</div>
+
+    <p>Aquí el filtro está <em>incrustado en el patrón</em>: <code>{title: 'The Matrix'}</code> restringe la búsqueda solo a la película con ese título. El resultado devuelve únicamente los nombres de los actores que participaron en esa película específica.</p>
+
+    <div class="analogy">
+      <div class="analogy-label">🧩 Analogía: MATCH como búsqueda de patrones</div>
+      Imagina que tienes un tablero de fotografías conectadas con hilos de colores. <code>MATCH</code> es como decir: "encuéntrame todas las combinaciones de fotos conectadas con un hilo rojo (ACTED_IN) donde la foto de la izquierda sea una persona y la de la derecha sea una película". Neo4J escaneará todo el tablero buscando ese patrón exacto.
+    </div>
+  </section>
+
+  <!-- SECCIÓN 10: MERGE -->
+  <section id="merge">
+    <div class="section-number">X · MERGE</div>
+    <h2>Agregar relaciones con MERGE</h2>
+
+    <p>La cláusula <strong><code>MERGE</code></strong> tiene un comportamiento especial: busca si el patrón especificado ya existe en el grafo y, de no encontrarlo, lo crea. Es como una operación de <em>"insertar si no existe"</em>.</p>
+
+    <p>El ejemplo del PDF añade una nueva relación de tipo REVIEWED entre Carrie-Anne Moss y la película The Matrix:</p>
+
+    <div class="code-block"><span class="cmt">-- Primero encontrar los nodos existentes con MATCH</span>
+<span class="kw">MATCH</span> (<span class="prop">p</span><span class="lbl">:Person</span> {<span class="prop">name</span>: <span class="str">'Carrie-Anne Moss'</span>}), (<span class="prop">m</span><span class="lbl">:Movie</span> {<span class="prop">title</span>: <span class="str">'The Matrix'</span>})
+
+<span class="cmt">-- Crear la relación solo si no existe ya</span>
+<span class="kw">MERGE</span> (<span class="prop">p</span>)<span class="sym">-[</span><span class="rel">:REVIEWED</span> {<span class="prop">rating</span>: <span class="num">5</span>}<span class="sym">]-&gt;</span>(<span class="prop">m</span>)</div>
+
+    <p>La combinación <code>MATCH + MERGE</code> es un patrón muy común:</p>
+    <ol>
+      <li><code>MATCH</code> localiza los nodos ya existentes (Carrie-Anne Moss y The Matrix) y los asigna a las variables <code>p</code> y <code>m</code>.</li>
+      <li><code>MERGE</code> crea la relación <code>REVIEWED</code> con rating=5 entre ellos, pero solo si esa relación no existe todavía.</li>
+    </ol>
+
+    <div class="key">
+      <div class="key-label">📌 Nota importante</div>
+      Nótese que una relación puede tener sus propias propiedades (<code>rating: 5</code> en la relación <code>REVIEWED</code>), igual que un nodo. Esto es una de las grandes ventajas del modelo de grafos de propiedad de Neo4J frente a otros modelos.
+    </div>
+  </section>
+
+  <!-- SECCIÓN 11: SET -->
+  <section id="actualizar">
+    <div class="section-number">XI · Actualizar</div>
+    <h2>Actualizar propiedades con SET</h2>
+
+    <p>Para modificar o añadir propiedades a nodos o relaciones ya existentes se usa la cláusula <strong><code>SET</code></strong>. Su funcionamiento combina siempre un <code>MATCH</code> (para encontrar el elemento) seguido de <code>SET</code> (para modificarlo):</p>
+
+    <div class="code-block"><span class="cmt">-- Encontrar a Keanu Reeves</span>
+<span class="kw">MATCH</span> (<span class="prop">p</span><span class="lbl">:Person</span> {<span class="prop">name</span>: <span class="str">'Keanu Reeves'</span>})
+
+<span class="cmt">-- Añadir o actualizar la propiedad birthYear</span>
+<span class="kw">SET</span> <span class="prop">p</span>.birthYear = <span class="num">1964</span></div>
+
+    <p>En este ejemplo:</p>
+    <ul>
+      <li><code>MATCH (p:Person {name: 'Keanu Reeves'})</code> localiza el nodo de Keanu Reeves y lo asigna a la variable <code>p</code>.</li>
+      <li><code>SET p.birthYear = 1964</code> añade la propiedad <code>birthYear</code> con valor <code>1964</code> al nodo. Si la propiedad ya existía, la actualiza; si no existía, la crea.</li>
+    </ul>
+
+    <table>
+      <thead><tr><th>Operación</th><th>Cypher</th><th>Equivalente SQL</th></tr></thead>
+      <tbody>
+        <tr><td>Actualizar propiedad existente</td><td><code>SET p.edad = 31</code></td><td><code>UPDATE ... SET edad=31</code></td></tr>
+        <tr><td>Añadir nueva propiedad</td><td><code>SET p.ciudad = 'Xalapa'</code></td><td><code>ALTER TABLE + UPDATE</code></td></tr>
+        <tr><td>Actualizar múltiples propiedades</td><td><code>SET p.edad = 31, p.ciudad = 'Xalapa'</code></td><td><code>UPDATE ... SET a=x, b=y</code></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- SECCIÓN 12: DELETE -->
+  <section id="eliminar">
+    <div class="section-number">XII · Eliminar</div>
+    <h2>Eliminar nodos y relaciones con DELETE</h2>
+
+    <p>La cláusula <strong><code>DELETE</code></strong> elimina nodos o relaciones del grafo. Al igual que <code>SET</code>, siempre va precedida de un <code>MATCH</code> que identifica qué se desea eliminar.</p>
+
+    <div class="code-block"><span class="cmt">-- 1. Encontrar el nodo de Lana Wachowski y su relación DIRECTED</span>
+<span class="kw">MATCH</span> (<span class="prop">p</span><span class="lbl">:Person</span> {<span class="prop">name</span>: <span class="str">'Lana Wachowski'</span>})<span class="sym">-[</span><span class="prop">r</span><span class="rel">:DIRECTED</span><span class="sym">]-&gt;</span>(<span class="prop">m</span><span class="lbl">:Movie</span> {<span class="prop">title</span>: <span class="str">'The Matrix'</span>})
+
+<span class="cmt">-- 2. Primero eliminar la relación</span>
+<span class="kw">DELETE</span> <span class="prop">r</span>
+
+<span class="cmt">-- 3. Luego eliminar el nodo</span>
+<span class="kw">DELETE</span> <span class="prop">p</span></div>
+
+    <div class="warning">
+      <div class="warning-label">⚠️ Regla crítica de Neo4J</div>
+      En Neo4J, <strong>no se puede eliminar un nodo que todavía tiene relaciones</strong>. Siempre hay que eliminar primero las relaciones y después el nodo. Si se intenta eliminar un nodo con relaciones activas, Neo4J devolverá un error. Esta regla protege la integridad del grafo.
+    </div>
+
+    <p>Existe también la cláusula <code>DETACH DELETE</code> que elimina un nodo <em>y todas sus relaciones</em> en una sola instrucción:</p>
+
+    <div class="code-block"><span class="kw">MATCH</span> (<span class="prop">p</span><span class="lbl">:Person</span> {<span class="prop">name</span>: <span class="str">'Lana Wachowski'</span>})
+<span class="kw">DETACH DELETE</span> <span class="prop">p</span>   <span class="cmt">-- elimina el nodo y TODAS sus relaciones automáticamente</span></div>
+  </section>
+
+  <!-- SECCIÓN 13: RESUMEN -->
+  <section id="resumen">
+    <div class="section-number">XIII · Resumen final</div>
+    <h2>Resumen final y tabla de referencia</h2>
+
+    <p>Neo4J y el modelo de grafos representan un paradigma fundamentalmente diferente al relacional: los datos no son filas en una tabla, sino entidades interconectadas en una red. La clave está en que <strong>las relaciones son tan importantes como los datos que relacionan</strong>.</p>
+
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="card-icon">🔵</div>
+        <h4>Nodo</h4>
+        <p>Entidad del dominio. Tiene etiquetas (<code>:Person</code>) y propiedades (<code>name, age</code>). Se escribe entre paréntesis en Cypher.</p>
+      </div>
+      <div class="summary-card">
+        <div class="card-icon">➡️</div>
+        <h4>Relación</h4>
+        <p>Conexión dirigida entre dos nodos. Tiene un tipo (<code>:ACTED_IN</code>), dirección, y puede tener propiedades propias (<code>role</code>).</p>
+      </div>
+      <div class="summary-card">
+        <div class="card-icon">🔑</div>
+        <h4>Propiedad</h4>
+        <p>Par clave-valor en nodos o relaciones. Equivale a los atributos o columnas del modelo relacional.</p>
+      </div>
+      <div class="summary-card">
+        <div class="card-icon">🔍</div>
+        <h4>Cypher</h4>
+        <p>Lenguaje de consulta. Expresa patrones de grafos de forma visual e intuitiva. Sus cláusulas principales: MATCH, CREATE, MERGE, SET, DELETE, RETURN.</p>
+      </div>
+    </div>
+
+    <h3>Tabla de referencia rápida de Cypher</h3>
+    <table>
+      <thead><tr><th>Cláusula</th><th>Función</th><th>Equivalente SQL</th></tr></thead>
+      <tbody>
+        <tr><td><code>CREATE (n:Label {prop: val})</code></td><td>Crear un nodo</td><td><code>INSERT INTO tabla</code></td></tr>
+        <tr><td><code>CREATE (a)-[:REL]-&gt;(b)</code></td><td>Crear una relación</td><td><em>No tiene equivalente directo</em></td></tr>
+        <tr><td><code>MATCH (n:Label)</code></td><td>Buscar nodos por patrón</td><td><code>SELECT ... FROM</code></td></tr>
+        <tr><td><code>RETURN n.propiedad</code></td><td>Retornar datos</td><td><code>SELECT columna</code></td></tr>
+        <tr><td><code>MERGE (n)-[:REL]-&gt;(m)</code></td><td>Crear si no existe</td><td><code>INSERT OR IGNORE</code></td></tr>
+        <tr><td><code>SET n.prop = valor</code></td><td>Actualizar propiedad</td><td><code>UPDATE ... SET</code></td></tr>
+        <tr><td><code>DELETE r</code></td><td>Eliminar relación</td><td><code>DELETE FROM (relación)</code></td></tr>
+        <tr><td><code>DELETE n</code></td><td>Eliminar nodo (sin relaciones)</td><td><code>DELETE FROM tabla</code></td></tr>
+        <tr><td><code>DETACH DELETE n</code></td><td>Eliminar nodo con todas sus relaciones</td><td><code>DELETE CASCADE</code></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer>
+    <p>Resumen elaborado con base en las diapositivas del Dr. Edgard Iván Benítez Guerrero &mdash; Bases de Datos Post-Relacionales, FEI · Universidad Veracruzana.</p>
+  </footer>
+
+</div>
+</body>
+</html>
